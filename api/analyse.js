@@ -1,8 +1,4 @@
-// api/analyse.js — Vercel serverless function
-// Place this file at: cvio/api/analyse.js
-
 export default async function handler(req, res) {
-  // Handle CORS preflight
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -18,11 +14,22 @@ export default async function handler(req, res) {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if (!GROQ_API_KEY) {
-    return res.status(500).json({ error: 'GROQ_API_KEY environment variable not set' });
+    return res.status(500).json({ error: 'GROQ_API_KEY not set in Vercel environment variables' });
   }
 
   try {
-    const { prompt, max_tokens } = req.body;
+    // Vercel sometimes sends body as string, sometimes as object — handle both
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch(e) { body = {}; }
+    }
+
+    const prompt = body.prompt || '';
+    const max_tokens = body.max_tokens || 1200;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'No prompt provided' });
+    }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -32,7 +39,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: max_tokens || 2000,
+        max_tokens: max_tokens,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -52,6 +59,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message || 'Internal server error' });
   }
 }
