@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVio - AI CV Analyser for Every Professional</title>
+<meta name="description" content="Get your CV scored, ATS-checked, and improved by AI. Free to start.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text y='22' x='4' font-size='16' font-weight='700' font-family='Arial' fill='white'>CV</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0f172a;--paper:#f8fafc;--blue:#2563eb;--muted:#64748b;--border:#e2e8f0;--success:#16a34a;--danger:#dc2626;--warn:#d97706}
+body{font-family:'DM Sans',sans-serif;background:#f0f4ff;color:var(--ink);min-height:100vh}
+
+/* HEADER */
+.hdr{background:#fff;border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.logo{display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-box{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.logo-text{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600}
+.logo-text span{color:var(--blue)}
+.nav{display:flex;align-items:center;gap:6px}
+.nbtn{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;padding:6px 12px;border-radius:6px}
+.nbtn:hover{background:#f1f5f9}
+.nbtn.out{border:1px solid var(--border);color:var(--ink)}
+.nbtn.sol{background:var(--blue);color:#fff;font-weight:500}
+.nbtn.sol:hover{background:#1d4ed8}
+.upill{display:none;align-items:center;gap:6px;font-size:12px;background:#f0fdf4;border:1px solid #86efac;padding:4px 12px;border-radius:20px;color:var(--success)}
+.upill.show{display:flex}
+.ham{display:none;flex-direction:column;gap:4px;cursor:pointer;background:none;border:none;padding:6px}
+.ham span{width:20px;height:2px;background:var(--ink);border-radius:2px;display:block}
+.mmenu{display:none;position:fixed;top:58px;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);padding:1rem;z-index:199;flex-direction:column;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.mmenu.open{display:flex}
+@media(max-width:600px){.nav{display:none}.ham{display:flex}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);color:#fff;padding:3.5rem 1.5rem 2.5rem}
+.hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+@media(max-width:700px){.hero-inner{grid-template-columns:1fr}}
+.hero h1{font-family:'Fraunces',serif;font-size:2.8rem;line-height:1.1;font-weight:600;margin-bottom:1rem}
+.hero h1 em{color:#f0a500;font-style:italic}
+.hero p{font-size:14px;color:#94a3b8;line-height:1.7;margin-bottom:1.5rem;max-width:420px}
+.hbtns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem}
+.hbtn1{background:var(--blue);color:#fff;border:none;padding:11px 26px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.hbtn2{background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,.2);padding:11px 22px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+.sp{display:flex;align-items:center;gap:10px}
+.avs{display:flex}.av{width:28px;height:28px;border-radius:50%;border:2px solid #1e3a5f;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-left:-6px}
+.stars{color:#f0a500;font-size:12px}
+.sp-lbl{font-size:11px;color:#94a3b8}
+.hcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:1.25rem}
+.hcard-ttl{font-size:10px;color:#93c5fd;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+.sc-circle{width:60px;height:60px;border-radius:50%;background:conic-gradient(#22c55e 0% 82%,rgba(255,255,255,.08) 82%);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-inner{width:46px;height:46px;border-radius:50%;background:#0d2137;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:#22c55e}
+
+/* HIRED BAR */
+.hired{background:#f8faff;border-bottom:1px solid var(--border);padding:1.25rem 1.5rem}
+.hired p{text-align:center;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600;margin-bottom:1rem}
+.hired-logos{display:flex;align-items:center;justify-content:center;gap:.75rem;flex-wrap:wrap}
+.lbadge{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 16px;display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700}
+
+/* TESTIMONIALS */
+.testis{background:#fff;padding:3rem 1.5rem;border-bottom:1px solid var(--border)}
+.sec-hdr{text-align:center;margin-bottom:2rem}
+.sec-tag{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.sec-title{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;color:var(--ink)}
+.sec-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.testi-wrap{max-width:1100px;margin:0 auto;position:relative}
+.testi-viewport{overflow:hidden}
+.testi-track{display:flex;gap:1rem;transition:transform .4s ease}
+.tc{background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:1.25rem;min-width:calc(33.33% - .67rem);flex-shrink:0}
+.tc-stars{color:#f0a500;font-size:13px;margin-bottom:8px}
+.tc-text{font-size:13px;line-height:1.7;color:var(--ink);margin-bottom:10px}
+.tc-auth{display:flex;align-items:center;gap:8px}
+.tc-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.arr{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #bfdbfe;cursor:pointer;font-size:16px;color:var(--blue);z-index:10;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.arr.l{left:-18px}.arr.r{right:-18px}
+.t-dots{display:flex;justify-content:center;gap:5px;margin-top:1.5rem}
+
+/* STATS */
+.stats-row{display:inline-flex;align-items:center;gap:2rem;background:#fff;border:1px solid #bfdbfe;border-radius:10px;padding:.875rem 2rem;flex-wrap:wrap;justify-content:center}
+.stat-val{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;color:var(--blue)}
+.stat-lbl{font-size:12px;color:var(--muted)}
+.sdiv{width:1px;height:36px;background:var(--border)}
+
+/* INDUSTRIES */
+.inds{background:#fff;border-bottom:1px solid var(--border);padding:.5rem 1.5rem;display:flex;align-items:center;gap:8px;overflow-x:auto}
+.ind-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.chip{font-size:12px;border:1px solid var(--border);padding:3px 11px;border-radius:20px;color:var(--muted);white-space:nowrap;flex-shrink:0;background:#f8fafc}
+
+/* TABS */
+.tabs{display:flex;background:#fff;border-bottom:2px solid #bfdbfe;overflow-x:auto}
+.tab{padding:.875rem 1.25rem;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tc-content{display:none;padding:1.5rem;background:#f0f4ff}
+.tc-content.active{display:block}
+
+/* PANELS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;align-items:start}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ptitle{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+
+/* UPLOAD */
+.upzone{border:1.5px dashed var(--border);padding:1.25rem 1rem;text-align:center;cursor:pointer;border-radius:6px;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative;transition:all .2s}
+.upzone:hover,.upzone.drag{border-color:var(--blue);background:#eff6ff}
+.upzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upzone p{font-size:13px;color:var(--muted)}
+.upzone .hint{font-size:11px;color:#aaa}
+.fpill{margin-top:8px;font-size:12px;background:#f7f9fc;border:1px solid var(--border);padding:5px 10px;border-radius:6px;display:none;align-items:center;gap:8px}
+.fpill.show{display:flex}
+.fpill span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmbtn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px}
+
+/* FIELDS */
+.flbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-top:.875rem;margin-bottom:4px;display:block}
+.finput{width:100%;border:1px solid var(--border);background:#fafbfc;font-family:'DM Sans',sans-serif;font-size:14px;padding:8px 11px;color:var(--ink);outline:none;transition:border-color .2s;border-radius:6px}
+.finput:focus{border-color:var(--blue)}
+textarea.finput{resize:vertical;min-height:90px;line-height:1.5}
+select.finput{cursor:pointer}
+.fnote{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* BUTTONS */
+.pbtn{width:100%;margin-top:.875rem;padding:11px;background:var(--ink);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s}
+.pbtn:hover{background:#1e293b}
+.pbtn:disabled{opacity:.4;cursor:not-allowed}
+.pbtn.busy{background:var(--danger)}
+
+/* STATES */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;text-align:center;gap:8px;padding:2rem}
+.empty p{font-size:13px;color:var(--muted);line-height:1.6}
+.empty-ic{font-size:32px;opacity:.2}
+.loading{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:240px;gap:12px}
+.spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dot{0%,60%,100%{opacity:.2;transform:scale(.8)}30%{opacity:1;transform:scale(1)}}
+.ld-txt{font-size:13px;color:var(--muted)}
+.errmsg{background:#fff5f5;border:1px solid #fca5a5;padding:9px 12px;font-size:13px;color:var(--danger);margin-top:8px;display:none;border-radius:6px;line-height:1.5}
+.errmsg.show{display:block}
+
+/* RESULTS */
+.score-row{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.score-num{font-family:'Fraunces',serif;font-size:3.5rem;line-height:1;font-weight:600}
+.score-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.score-sum{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+.rs{margin-bottom:1.25rem}
+.rst{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.rst::after{content:'';flex:1;height:1px;background:var(--border)}
+.str-item{font-size:13px;line-height:1.6;padding:5px 0;border-bottom:1px solid var(--border);color:var(--success);display:flex;gap:8px}
+.str-item:last-child{border:none}
+.iss-item{font-size:13px;padding:8px 10px;margin-bottom:5px;border-left:3px solid var(--danger);background:#fff5f5;border-radius:0 6px 6px 0}
+.iss-fix{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.kw{display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px}
+.kw.miss{border-color:var(--danger);color:var(--danger);background:#fff5f5}
+.sal-band{background:#f0fdf4;border:1px solid #86efac;padding:11px;margin-top:4px;border-radius:6px}
+.sal-amt{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--success);font-weight:600}
+.sal-note{font-size:12px;color:var(--muted);margin-top:2px}
+.top-act{background:var(--ink);color:#fff;padding:.875rem;margin-top:4px;border-radius:6px}
+.ta-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7a7670;margin-bottom:4px}
+.ta-txt{font-size:13px;line-height:1.6}
+.ats-bar-wrap{background:#f0f0ee;border-radius:3px;height:7px;margin:5px 0 2px;overflow:hidden}
+.ats-bar{height:100%;border-radius:3px;transition:width 1s ease}
+.ats-lbls{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.act-row{display:flex;gap:7px;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border);flex-wrap:wrap}
+.abtn{flex:1;min-width:80px;padding:8px 10px;border:1px solid var(--border);background:#f8fafc;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:7px;color:var(--ink);transition:all .2s}
+.abtn:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1)}
+
+/* INTERVIEW */
+.qi{background:#fff;border:1px solid var(--border);padding:.875rem;margin-bottom:8px;border-radius:8px}
+.q-num{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
+.q-txt{font-size:14px;font-weight:500;margin-bottom:6px;line-height:1.5}
+.q-detail{font-size:12px;color:var(--muted);line-height:1.6;padding-top:7px;border-top:1px solid var(--border)}
+.q-detail strong{color:var(--ink)}
+.q-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:500}
+.qb-tech{background:#e8f4fd;color:#1a5276}
+.qb-beh{background:#fef9e7;color:#7d6608}
+.qb-lead{background:#f0fdf4;color:var(--success)}
+.ans-box{margin-top:10px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left:4px solid var(--success);padding:12px 14px;border-radius:0 8px 8px 0}
+.ans-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--success);font-weight:700;margin-bottom:6px}
+.ans-txt{font-size:13px;color:#14532d;line-height:1.8}
+.copy-ans{margin-top:8px;font-size:11px;background:var(--success);color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-weight:600}
+
+/* CHAT */
+.chat-wrap{max-width:720px;margin:0 auto}
+.chat-msgs{min-height:300px;max-height:400px;overflow-y:auto;padding:.875rem 0;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.msg-bub{border:1px solid var(--border);padding:9px 13px;font-size:13px;line-height:1.6;max-width:85%;white-space:pre-wrap;border-radius:0 12px 12px 12px;background:#fafbfc}
+.msg.user .msg-bub{background:var(--ink);color:#fff;border-radius:12px 0 12px 12px}
+.sugg-row{display:flex;gap:5px;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:7px 0}
+.sugg-btn{font-size:11px;border:1px solid var(--border);background:#fafbfc;padding:3px 10px;border-radius:20px;cursor:pointer;color:var(--muted);font-family:inherit}
+.chat-inp-row{display:flex;gap:7px;align-items:flex-end;margin-top:8px}
+.chat-inp{flex:1;border:1px solid var(--border);background:#fafbfc;font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 11px;color:var(--ink);outline:none;border-radius:8px;resize:none;min-height:42px;max-height:110px;line-height:1.5;transition:border-color .2s}
+.chat-inp:focus{border-color:var(--blue)}
+.chat-send{padding:9px 16px;background:var(--ink);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;height:42px}
+.chat-clr{padding:9px 11px;background:#f1f5f9;color:var(--muted);border:1px solid var(--border);cursor:pointer;border-radius:8px;height:42px;font-family:inherit;font-size:13px}
+.cv-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:var(--muted);border:1px solid var(--border)}
+
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:8px;padding:2rem;max-width:400px;width:90%;position:relative;max-height:90vh;overflow-y:auto}
+.modal h2{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;margin-bottom:5px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.25rem}
+.modal-tab{flex:1;padding:7px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.modal-tab.active{color:var(--ink);border-bottom-color:var(--danger)}
+.mform{display:none}
+.mform.active{display:block}
+.minput{width:100%;border:1px solid var(--border);background:#fafbfc;font-family:inherit;font-size:14px;padding:9px 11px;color:var(--ink);outline:none;border-radius:6px;margin-bottom:9px;transition:border-color .2s}
+.minput:focus{border-color:var(--blue)}
+.mbtn{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;margin-top:3px;transition:background .2s}
+.mbtn:hover{background:#1e293b}
+.merr{font-size:12px;color:var(--danger);margin-top:5px;display:none}
+.merr.show{display:block}
+.close-modal{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
+
+/* PRICING OVERLAY */
+.price-overlay{display:none;position:fixed;inset:0;background:var(--paper);z-index:999;overflow-y:auto;padding:2rem}
+.price-overlay.show{display:block}
+.price-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;padding-bottom:1rem;border-bottom:2px solid var(--ink);flex-wrap:wrap;gap:1rem}
+.price-title{font-family:'Fraunces',serif;font-size:2rem;font-weight:600}
+.back-btn{font-size:13px;color:var(--muted);cursor:pointer;border:1px solid var(--border);padding:6px 16px;background:none;font-family:inherit;border-radius:6px}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;max-width:820px;margin:0 auto}
+.plan-card{background:#fff;border:1px solid var(--border);padding:1.75rem;border-radius:8px}
+.plan-card.feat{border:2px solid var(--ink)}
+.plan-badge{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.plan-badge.hot{color:var(--danger)}
+.plan-name{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;margin-bottom:3px}
+.plan-price{font-size:1.9rem;font-weight:300;margin-bottom:5px}
+.plan-price span{font-size:13px;color:var(--muted);font-weight:400}
+.plan-desc{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+.plan-feats{list-style:none;margin-bottom:1.5rem}
+.plan-feats li{font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:7px}
+.plan-feats li:last-child{border:none}
+.plan-feats li::before{content:'✓';color:var(--success);flex-shrink:0}
+.plan-cta{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;border-radius:6px;transition:background .2s}
+.plan-cta:hover{background:#1e293b}
+.plan-cta.out{background:transparent;color:var(--ink);border:1px solid var(--border)}
+.plan-cta.out:hover{background:var(--ink);color:#fff}
+
+/* PAYWALL */
+.paywall-card{background:#fff;border-radius:8px;padding:2rem;max-width:400px;width:90%;text-align:center}
+.paywall-card h2{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;margin-bottom:7px}
+.paywall-card p{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6}
+.pw-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:1rem}
+.pw-opt{border:1px solid var(--border);padding:.875rem;border-radius:6px;cursor:pointer;text-align:center}
+.pw-opt.feat{border:2px solid var(--danger)}
+.pw-price{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600}
+.pw-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* SHARE */
+.share-box{background:#fff;border-radius:8px;padding:2rem;max-width:340px;width:90%;position:relative}
+.share-box h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin-bottom:5px}
+.share-box p{font-size:13px;color:var(--muted);margin-bottom:.875rem}
+.share-opt{width:100%;padding:9px 13px;border:1px solid var(--border);background:#fafbfc;font-family:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:9px;border-radius:6px;color:var(--ink);margin-bottom:5px;text-align:left;transition:all .2s}
+.share-opt:hover{background:var(--ink);color:#fff}
+
+/* FEEDBACK */
+.fb-modal{background:#fff;border-radius:8px;padding:1.75rem;max-width:360px;width:90%;position:relative}
+.fb-modal h3{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin-bottom:4px}
+.star-row{display:flex;gap:5px;margin:1rem 0}
+.star{font-size:22px;cursor:pointer;opacity:.25;transition:opacity .15s}
+.star.on{opacity:1}
+.fb-ta{width:100%;border:1px solid var(--border);background:#fafbfc;font-family:inherit;font-size:13px;padding:9px 11px;color:var(--ink);outline:none;border-radius:6px;resize:vertical;min-height:75px}
+.fb-sbtn{width:100%;margin-top:9px;padding:10px;background:var(--ink);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--ink);color:#fff;padding:9px 20px;font-size:13px;z-index:2000;opacity:0;transition:all .3s;border-radius:6px;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* SCROLL TOP */
+#scrollTop{display:none;position:fixed;bottom:85px;right:20px;width:38px;height:38px;background:#1e293b;color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:16px;z-index:490;box-shadow:0 2px 8px rgba(0,0,0,.25);align-items:center;justify-content:center}
+
+/* SIDEBAR FEEDBACK */
+#fbTab{position:fixed;right:-40px;top:50%;transform:translateY(-50%) rotate(-90deg);background:var(--blue);color:#fff;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;z-index:490;border-radius:6px 6px 0 0;letter-spacing:.05em;transition:right .2s;box-shadow:-2px 0 6px rgba(0,0,0,.12)}
+#fbTab:hover{right:-2px}
+
+/* COOKIE BANNER */
+#cookieBanner{display:none;position:fixed;bottom:0;left:0;right:0;background:#0f172a;color:#cbd5e1;padding:.875rem 1.5rem;z-index:9999;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 -2px 8px rgba(0,0,0,.2)}
+.cb-btn{background:var(--blue);color:#fff;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500}
+.cb-btn2{background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,.2);padding:7px 18px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--border);cursor:pointer}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:.875rem 0;font-size:14px;font-weight:500;color:var(--ink)}
+.faq-arr{font-size:16px;color:var(--blue);transition:transform .2s}
+.faq-a{display:none;font-size:13px;color:var(--muted);line-height:1.7;padding-bottom:.875rem}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-arr{transform:rotate(45deg)}
+
+/* ARTICLE MODAL */
+#articleModal .modal{max-width:660px;max-height:88vh;overflow-y:auto}
+
+/* SAMPLE MODAL */
+#sampleModal .modal{max-width:500px}
+
+/* FOOTER */
+.footer{background:#0f172a;color:#94a3b8;padding:2.5rem 1.5rem}
+.footer-grid{max-width:980px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;margin-bottom:2rem}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+.foot-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:#fff;margin-bottom:7px}
+.foot-lnk{font-size:13px;line-height:2;cursor:pointer;color:#94a3b8;background:none;border:none;font-family:inherit;text-align:left;display:block;text-decoration:none}
+.foot-lnk:hover{color:#fff}
+.foot-section-title{font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;max-width:980px;margin:0 auto}
+
+/* ALL-IN-ONE SECTION */
+.aio{background:#1a3a5c;color:#fff;padding:2.5rem 1.5rem;text-align:center}
+.aio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;max-width:980px;margin:1.5rem auto 2rem}
+.aio-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:.875rem;text-align:left}
+
+/* ARTICLES SECTION */
+.art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:1.25rem;max-width:980px;margin:0 auto}
+.art-card{border:1px solid var(--border);border-radius:9px;overflow:hidden;cursor:pointer;transition:box-shadow .2s}
+.art-card:hover{box-shadow:0 4px 16px rgba(37,99,235,.1)}
+.art-img{height:130px;display:flex;align-items:center;justify-content:center;font-size:44px}
+.art-body{padding:1.1rem}
+.art-tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-bottom:5px}
+.art-ttl{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:7px;line-height:1.4}
+.art-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:.875rem}
+.art-auth{display:flex;align-items:center;gap:7px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo" onclick="goTab('analyse')">
+    <div class="logo-box">CV</div>
+    <div class="logo-text">CV<span>io</span></div>
+  </div>
+  <div class="nav">
+    <button class="nbtn" onclick="showPricing()">Pricing</button>
+    <button class="nbtn out" id="loginBtn" onclick="openAuth('login')">Log in</button>
+    <button class="nbtn sol" id="signupBtn" onclick="openAuth('signup')">Sign up free</button>
+    <div class="upill" id="userPill">
+      <span>You</span>
+      <span id="userEmail"></span>
+      <span style="color:#aaa;cursor:pointer;margin-left:4px" onclick="logout()">Log out</span>
+      <span id="adminBtn" style="display:none;color:var(--blue);cursor:pointer;margin-left:4px;font-size:11px" onclick="adminReset()">↺ Reset</span>
+    </div>
+  </div>
+  <button class="ham" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+  <div class="mmenu" id="mmenu">
+    <button class="nbtn" onclick="showPricing();toggleMenu()">Pricing</button>
+    <button id="mLoginBtn" class="nbtn out" onclick="openAuth('login');toggleMenu()">Log in</button>
+    <button id="mSignupBtn" class="nbtn sol" onclick="openAuth('signup');toggleMenu()">Sign up free</button>
+    <div id="mUserDiv" style="display:none;padding:9px 12px;font-size:13px;color:var(--success);background:#f0fdf4;border-radius:6px">
+      Logged in as <span id="mUserEmail" style="font-weight:600"></span>
+      <button onclick="logout();toggleMenu()" style="display:block;margin-top:5px;color:var(--danger);background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px">Log out</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <h1>Get more interviews<br>with a <em>smarter CV</em></h1>
+      <p>CVio analyses your CV, matches it to any job, rewrites weak bullet points, and prepares you for interviews. Works for every industry and every role.</p>
+      <div class="hbtns">
+        <button class="hbtn1" onclick="goTab('analyse')">Analyse my CV free</button>
+        <button class="hbtn2" onclick="showSample()">See a sample result</button>
+      </div>
+      <div class="sp">
+        <div class="avs">
+          <div class="av" style="background:#e8c4a0;color:#92400e;z-index:5">S</div>
+          <div class="av" style="background:#a0c4e8;color:#1e3a5f;z-index:4">J</div>
+          <div class="av" style="background:#c4e8a0;color:#1a4d1a;z-index:3">P</div>
+          <div class="av" style="background:#e8a0c4;color:#4d1a3a;z-index:2">M</div>
+          <div class="av" style="background:#e8e0a0;color:#4d4a1a;z-index:1">R</div>
+        </div>
+        <div><div class="stars">★★★★★</div><div class="sp-lbl">Trusted by job seekers across the UK</div></div>
+      </div>
+    </div>
+    <div class="hcard">
+      <div class="hcard-ttl">CV Analysis Result - Sample</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.1)">
+        <div class="sc-circle"><div class="sc-inner">82</div></div>
+        <div><div style="font-size:13px;font-weight:500;color:#fff">Strong Candidate</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">ATS Score: 74% - Ready to apply</div></div>
+      </div>
+      <div style="margin-bottom:9px"><div style="font-size:11px;color:#93c5fd;margin-bottom:4px;text-transform:uppercase">Strengths</div>
+        <div style="font-size:12px;color:#86efac;padding:2px 0">+ Strong quantified achievements - 40% efficiency improvement</div>
+        <div style="font-size:12px;color:#86efac;padding:2px 0">+ Relevant skills: SQL, Python, Power BI</div>
+      </div>
+      <div style="margin-bottom:9px"><div style="font-size:11px;color:#f87171;margin-bottom:4px;text-transform:uppercase">Issues to fix</div>
+        <div style="font-size:12px;color:#fca5a5;padding:2px 0">x Personal summary too generic</div>
+        <div style="font-size:12px;color:#fca5a5;padding:2px 0">x Missing keywords: dbt, Airflow</div>
+      </div>
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 11px">
+        <div style="font-size:11px;color:#86efac;margin-bottom:2px">Salary estimate</div>
+        <div style="font-size:14px;font-weight:600;color:#22c55e;font-family:'Fraunces',serif">£55,000 - £75,000</div>
+        <div style="font-size:11px;color:#6ee7b7">UK market rate for Senior Data Analyst</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HIRED BY -->
+<div class="hired">
+  <p>CVio users have been hired by</p>
+  <div class="hired-logos">
+    <div class="lbadge"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.3 2 9.6 7.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 46c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.9 37 27.1 38 24 38c-5.8 0-10.8-3.9-12.6-9.3l-7 5.4C7.6 41.8 15.2 46 24 46z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.8 2.4-2.3 4.4-4.3 5.8l6.6 5.4C42 36.3 45 30.7 45 24c0-1.3-.2-2.7-.5-4z"/></svg><span style="color:#3c4043">Google</span></div>
+    <div class="lbadge"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#1877F2" d="M24 4C12.95 4 4 12.95 4 24c0 9.96 7.29 18.22 16.84 19.76V29.5h-5.06V24h5.06v-4.38c0-5 2.98-7.76 7.54-7.76 2.18 0 4.47.39 4.47.39v4.91h-2.52c-2.48 0-3.25 1.54-3.25 3.12V24h5.54l-.89 5.5H27.08v14.26C36.71 42.22 44 33.96 44 24c0-11.05-8.95-20-20-20z"/></svg><span style="color:#1877f2">Meta</span></div>
+    <div class="lbadge" style="color:#232f3e">amazon</div>
+    <div class="lbadge" style="color:#db0011">HSBC</div>
+    <div class="lbadge" style="color:#1b1b1b">Deloitte</div>
+    <div class="lbadge" style="background:#2e2e38;color:#ffe600">EY</div>
+    <div class="lbadge" style="background:#003087;color:#fff">NHS</div>
+    <div class="lbadge" style="color:#a100ff">Accenture</div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<div class="testis">
+  <div class="sec-hdr">
+    <div class="sec-tag">What job seekers say</div>
+    <div class="sec-title">Real results from people around the world</div>
+    <div class="sec-sub">From London to Mumbai, New York to Sydney</div>
+  </div>
+  <div class="testi-wrap">
+    <button class="arr l" onclick="slideTesti(-1)">&#8249;</button>
+    <div class="testi-viewport"><div id="tTrack" class="testi-track">
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"My ATS score went from 48% to 82% and I landed 4 interviews in one week."</p><div class="tc-auth"><div class="tc-av" style="background:#e8c4a0;color:#92400e">S</div><div><div style="font-size:13px;font-weight:500">Sarah M.</div><div style="font-size:11px;color:var(--muted)">Marketing Manager - London</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"What used to take 3 hours per application now takes 20 minutes."</p><div class="tc-auth"><div class="tc-av" style="background:#a0c4e8;color:#1e3a5f">J</div><div><div style="font-size:13px;font-weight:500">James T.</div><div style="font-size:11px;color:var(--muted)">Software Engineer - Toronto</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"The interview prep gave me real confidence. Got the job at Accenture!"</p><div class="tc-auth"><div class="tc-av" style="background:#c4e8a0;color:#1a4d1a">P</div><div><div style="font-size:13px;font-weight:500">Priya K.</div><div style="font-size:11px;color:var(--muted)">Data Analyst - Mumbai</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"CVio showed me exactly how to reframe my CV. Got hired within 6 weeks."</p><div class="tc-auth"><div class="tc-av" style="background:#f0d0e8;color:#6b2157">A</div><div><div style="font-size:13px;font-weight:500">Amara O.</div><div style="font-size:11px;color:var(--muted)">Training Manager - Lagos</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"The salary estimator showed I was undervaluing myself by 20%."</p><div class="tc-auth"><div class="tc-av" style="background:#e8d0f0;color:#4a1a6b">R</div><div><div style="font-size:13px;font-weight:500">Riya S.</div><div style="font-size:11px;color:var(--muted)">Senior PM - Bangalore</div></div></div></div>
+      <div class="tc"><div class="tc-stars">★★★★★</div><p class="tc-text">"I applied to 30 jobs and got zero responses. After CVio I applied to 10 and got 3 interviews."</p><div class="tc-auth"><div class="tc-av" style="background:#f0d0d0;color:#6b1a1a">C</div><div><div style="font-size:13px;font-weight:500">Carlos R.</div><div style="font-size:11px;color:var(--muted)">Operations Manager - New York</div></div></div></div>
+    </div></div>
+    <button class="arr r" onclick="slideTesti(1)">&#8250;</button>
+    <div id="tDots" class="t-dots"></div>
+  </div>
+  <div style="text-align:center;margin-top:2rem">
+    <div class="stats-row">
+      <div><div class="stat-val analyses-counter">12,000+</div><div class="stat-lbl">CVs analysed</div></div>
+      <div class="sdiv"></div>
+      <div><div class="stat-val">50+</div><div class="stat-lbl">Countries</div></div>
+      <div class="sdiv"></div>
+      <div><div class="stat-val">4.9/5</div><div class="stat-lbl">Average rating</div></div>
+      <div class="sdiv"></div>
+      <div><div class="stat-val">3x</div><div class="stat-lbl">More interviews</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INDUSTRIES -->
+<div class="inds">
+  <span class="ind-lbl">Works for:</span>
+  <span class="chip">Tech</span><span class="chip">Finance</span><span class="chip">NHS</span><span class="chip">Marketing</span><span class="chip">Legal</span><span class="chip">Education</span><span class="chip">Engineering</span><span class="chip">Creative</span><span class="chip">Operations</span><span class="chip">Any industry</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabBar">
+  <button class="tab active" onclick="switchTab(this,'analyse')">CV Analyser</button>
+  <button class="tab" onclick="switchTab(this,'rewrite')">Bullet Rewriter</button>
+  <button class="tab" onclick="switchTab(this,'interview')">Interview Prep</button>
+  <button class="tab" onclick="switchTab(this,'builder')">CV Builder</button>
+  <button class="tab" onclick="switchTab(this,'chat')">CV Coach</button>
+</div>
+
+<!-- TAB: CV ANALYSER -->
+<div class="tc-content active" id="tab-analyse">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ptitle">Upload your CV</div>
+      <div class="upzone" id="dz1"><input type="file" id="cf1" accept=".pdf,.docx,.txt" onchange="handleFile(this,1)"><p>Drop your CV here or click to browse</p><div class="hint">PDF, Word (.docx), or TXT</div></div>
+      <div class="fpill" id="fp1"><span id="fn1"></span><button class="rmbtn" onclick="removeFile(1)">×</button></div>
+      <span class="flbl">Target role and industry</span>
+      <input class="finput" id="role1" placeholder="e.g. Senior Data Analyst at a FTSE 100 company">
+      <div class="errmsg" id="err1"></div>
+      <button class="pbtn" id="btn1" onclick="runAnalysis()"><span id="btxt1">Analyse my CV</span></button>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Your results</div>
+      <div class="empty" id="emp1"><div class="empty-ic">...</div><p>Upload your CV and click Analyse.<br>Your full report will appear here.</p></div>
+      <div class="loading" id="ld1"><div class="spin"></div><div class="ld-txt" id="lt1">Reading your CV...</div></div>
+      <div id="res1" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: BULLET REWRITER -->
+<div class="tc-content" id="tab-rewrite">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ptitle">Rewrite a CV bullet point</div>
+      <span class="flbl">Your current bullet point</span>
+      <textarea class="finput" id="bullet" oninput="updateCount()" placeholder="e.g. Helped with social media posts and grew the audience..."></textarea>
+      <div style="font-size:11px;color:var(--muted);text-align:right;margin-top:3px" id="bcount">0 characters</div>
+      <span class="flbl">Your job title</span>
+      <input class="finput" id="brole" placeholder="e.g. Marketing Executive">
+      <span class="flbl">Rewrite style</span>
+      <select class="finput" id="tone">
+        <option value="impact">Impact-focused — show results and numbers</option>
+        <option value="technical">Skills-focused — highlight tools and expertise</option>
+        <option value="leadership">Leadership — show ownership and initiative</option>
+        <option value="concise">Concise — shorter and punchier</option>
+      </select>
+      <div class="errmsg" id="err3"></div>
+      <button class="pbtn" id="btn3" onclick="runRewrite()"><span id="btxt3">Rewrite this bullet point</span></button>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Rewritten version</div>
+      <div class="empty" id="emp3"><div class="empty-ic">...</div><p>Paste a weak bullet point and AI will make it powerful.</p></div>
+      <div class="loading" id="ld3"><div class="spin"></div><div class="ld-txt">Rewriting...</div></div>
+      <div id="res3" style="display:none">
+        <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+          <div class="rst">Original</div>
+          <div id="orig3" style="font-size:13px;color:var(--muted);line-height:1.6;padding:7px 9px;background:#f7f9fc;border-left:3px solid var(--border);border-radius:0 5px 5px 0"></div>
+        </div>
+        <div class="rst">AI rewrite</div>
+        <div id="rew3" style="font-size:14px;line-height:1.7;padding:9px 11px;background:#f0fdf4;border-left:3px solid var(--success);border-radius:0 5px 5px 0"></div>
+        <div id="exp3" style="font-size:12px;color:var(--muted);margin-top:7px;line-height:1.6;padding:7px 9px;background:#f7f9fc;border-radius:5px"></div>
+        <div class="act-row">
+          <button class="abtn" style="background:var(--blue);color:#fff" onclick="copyEl('rew3')">Copy</button>
+          <button class="abtn" onclick="resetRewriter()">Try another</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: INTERVIEW PREP -->
+<div class="tc-content" id="tab-interview">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ptitle">Generate interview questions</div>
+      <div class="upzone" id="dz4"><input type="file" id="cf4" accept=".pdf,.docx,.txt" onchange="handleFile(this,4)"><p>Drop your CV here or click to browse</p><div class="hint">PDF, Word (.docx), or TXT</div></div>
+      <div class="fpill" id="fp4"><span id="fn4"></span><button class="rmbtn" onclick="removeFile(4)">×</button></div>
+      <span class="flbl">Target role</span>
+      <input class="finput" id="role4" placeholder="e.g. Business Analyst at a UK bank">
+      <span class="flbl">Question focus</span>
+      <select class="finput" id="qtype">
+        <option value="all">All types - technical and behavioural</option>
+        <option value="technical">Technical and skills-based only</option>
+        <option value="behavioural">Behavioural STAR questions only</option>
+        <option value="senior">Senior and leadership questions</option>
+      </select>
+      <div class="errmsg" id="err4"></div>
+      <button class="pbtn" id="btn4" onclick="runInterview()"><span id="btxt4">Generate interview questions</span></button>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Your personalised questions</div>
+      <div class="empty" id="emp4"><div class="empty-ic">...</div><p>Upload your CV and enter your target role to get 8 personalised interview questions with prepared answers.</p></div>
+      <div class="loading" id="ld4"><div class="spin"></div><div class="ld-txt" id="lt4">Generating questions...</div></div>
+      <div id="res4" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: CV BUILDER -->
+<div class="tc-content" id="tab-builder">
+  <div class="two-col">
+    <div class="panel">
+      <div class="ptitle">Build my CV for a specific job</div>
+      <div class="upzone" id="dz5"><input type="file" id="cf5" accept=".pdf,.docx,.txt" onchange="handleFile(this,5)"><p>Drop your CV here or click to browse</p><div class="hint">PDF, Word (.docx), or TXT</div></div>
+      <div class="fpill" id="fp5"><span id="fn5"></span><button class="rmbtn" onclick="removeFile(5)">×</button></div>
+      <span class="flbl">Target job description</span>
+      <textarea class="finput" id="bld-jd" rows="6" placeholder="Paste the full job description here..."></textarea>
+      <div class="fnote">The more detail you paste, the better the CV match</div>
+      <span class="flbl">Your target role title</span>
+      <input class="finput" id="bld-role" placeholder="e.g. Senior Data Analyst at HSBC">
+      <div class="errmsg" id="err5"></div>
+      <button class="pbtn" id="btn5" onclick="runBuilder()"><span id="btxt5">Build my CV for this job</span></button>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Your rebuilt CV</div>
+      <div class="empty" id="emp5"><div class="empty-ic">&#10024;</div><p>Upload your CV and paste a job description.<br>AI will rewrite your entire CV for that specific role.</p></div>
+      <div class="loading" id="ld5"><div class="spin"></div><div class="ld-txt" id="lt5">Reading your CV...</div></div>
+      <div id="res5" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: CV COACH -->
+<div class="tc-content" id="tab-chat">
+  <div class="chat-wrap">
+    <div class="panel" style="min-height:480px;display:flex;flex-direction:column">
+      <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between">
+        <span>AI CV Coach</span>
+        <div class="cv-badge" id="cvBadge">No CV loaded yet</div>
+      </div>
+      <div id="chatMsgs" class="chat-msgs">
+        <div class="msg"><div class="msg-av" style="background:var(--ink);color:#fff">AI</div><div class="msg-bub">Hi! I am your AI CV Coach. Upload your CV in the CV Analyser tab first, then I give advice specific to YOUR experience. Ask me anything!</div></div>
+      </div>
+      <div id="suggRow" class="sugg-row">
+        <button class="sugg-btn" onclick="askSugg(this)">How long should my CV be?</button>
+        <button class="sugg-btn" onclick="askSugg(this)">What is ATS?</button>
+        <button class="sugg-btn" onclick="askSugg(this)">How to write a personal statement?</button>
+        <button class="sugg-btn" onclick="askSugg(this)">How to explain career gap?</button>
+        <button class="sugg-btn" onclick="askSugg(this)">Tips for salary negotiation</button>
+      </div>
+      <div class="chat-inp-row">
+        <textarea id="chatIn" class="chat-inp" placeholder="Ask anything about your CV or job search..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}" oninput="this.style.height='42px';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button onclick="sendChat()" id="chatSendBtn" class="chat-send">Send</button>
+        <button onclick="clearChat()" class="chat-clr">Clear</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center">Press Enter to send — Shift+Enter for new line</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING OVERLAY -->
+<div class="price-overlay" id="priceOverlay">
+  <div class="price-hdr">
+    <div><div class="price-title">Choose your plan</div><div style="font-size:13px;color:var(--muted);margin-top:3px">Boost your interview chances. Cancel any time.</div></div>
+    <button class="back-btn" onclick="hidePricing()">Back to CVio</button>
+  </div>
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-badge">Free forever</div>
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">0 <span>GBP / forever</span></div>
+      <div class="plan-desc">Try CVio with no commitment. Perfect for a quick CV health check.</div>
+      <ul class="plan-feats"><li>5 CV analyses</li><li>ATS compatibility check</li><li>Keyword gap report</li><li>Salary range estimate</li><li>Bullet point rewriter</li><li>AI CV chatbot</li></ul>
+      <button class="plan-cta out" onclick="hidePricing();openAuth('signup')">Get started free</button>
+    </div>
+    <div class="plan-card feat">
+      <div class="plan-badge hot">Best value</div>
+      <div class="plan-name">Quarterly</div>
+      <div class="plan-price">13.99 <span>GBP / month</span></div>
+      <div style="font-size:12px;color:var(--success);margin-bottom:5px;font-weight:500">Billed £41.97 every 3 months — save £12</div>
+      <div class="plan-desc">For serious job seekers. Everything unlimited for 3 months.</div>
+      <ul class="plan-feats"><li>Everything in Free</li><li>Unlimited CV analyses</li><li>Unlimited interview prep</li><li>Full AI CV coach</li><li>Priority support</li><li>Save and download reports</li></ul>
+      <button id="qBtn" class="plan-cta" onclick="startCheckout('quarterly')">Subscribe — £13.99/mo</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:7px">Billed £41.97 every 3 months</div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-badge">Maximum flexibility</div>
+      <div class="plan-name">Monthly</div>
+      <div class="plan-price">17.99 <span>GBP / month</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:5px">Billed £17.99 every month</div>
+      <div class="plan-desc">Full flexibility — pay month by month, cancel any time.</div>
+      <ul class="plan-feats"><li>Everything in Free</li><li>Unlimited CV analyses</li><li>Unlimited interview prep</li><li>Full AI CV coach</li><li>Priority support</li><li>Save and download reports</li><li>Cancel any time</li></ul>
+      <button id="mBtn" class="plan-cta" onclick="startCheckout('monthly')">Subscribe — £17.99/mo</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:7px">Billed monthly — Cancel anytime</div>
+    </div>
+  </div>
+  <div style="max-width:820px;margin:1.5rem auto 0;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:.875rem 1.25rem;font-size:13px;color:var(--success);text-align:center">
+    Quarterly saves you £12 every 3 months vs Monthly. Billed as £41.97 total every 3 months.
+  </div>
+  <div style="max-width:820px;margin:2rem auto;padding-bottom:3rem">
+    <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;text-align:center;margin-bottom:1.25rem">Frequently asked questions</div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">How long will my free plan last? <span class="faq-arr">+</span></div><div class="faq-a">Your free plan never expires. You get 5 CV analyses, unlimited bullet rewrites, and the AI chatbot forever at no cost. Upgrade only when you need more.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What payment methods do you accept? <span class="faq-arr">+</span></div><div class="faq-a">We accept all major credit and debit cards via Stripe. Payment is processed securely. Contact hellocviosupport@gmail.com if you need help.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Can I cancel any time? <span class="faq-arr">+</span></div><div class="faq-a">Yes, cancel any time with no penalty. For Monthly, cancellation takes effect at end of current month. For Quarterly, at end of your 3-month period.</div></div>
+    <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Is my CV data safe? <span class="faq-arr">+</span></div><div class="faq-a">Yes. Your CV is processed in real time and never stored on our servers. We do not share your data with anyone.</div></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authModal">
+  <div class="modal">
+    <button class="close-modal" onclick="closeAuth()">×</button>
+    <h2>Welcome to CVio</h2>
+    <p class="modal-sub">Create your free account and start analysing your CV instantly.</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="signupTab" onclick="switchAuthTab('signup')">Sign up free</button>
+      <button class="modal-tab" id="loginTab" onclick="switchAuthTab('login')">Log in</button>
+    </div>
+    <div class="mform active" id="signupForm">
+      <input class="minput" id="sName" placeholder="Your full name">
+      <input class="minput" id="sEmail" type="email" placeholder="Your email address">
+      <input class="minput" id="sPass" type="password" placeholder="Create a password (min 6 chars)">
+      <button class="mbtn" onclick="doSignup()">Create free account</button>
+      <div class="merr" id="sErr"></div>
+    </div>
+    <div class="mform" id="loginForm">
+      <input class="minput" id="lEmail" type="email" placeholder="Your email address">
+      <input class="minput" id="lPass" type="password" placeholder="Your password">
+      <button class="mbtn" onclick="doLogin()">Log in</button>
+      <div class="merr" id="lErr"></div>
+      <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--muted)">No account? <span style="color:var(--danger);cursor:pointer" onclick="switchAuthTab('signup')">Sign up free</span></div>
+      <div style="text-align:center;margin-top:5px;font-size:12px"><span style="color:var(--muted);cursor:pointer" onclick="pwReset()">Forgot password?</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYWALL MODAL -->
+<div class="overlay" id="paywallModal">
+  <div class="paywall-card">
+    <div style="font-size:28px;margin-bottom:7px">...</div>
+    <h2>Ready to continue?</h2>
+    <p>Choose a plan to keep getting AI-powered CV analysis and interview prep.</p>
+    <div class="pw-opts">
+      <div class="pw-opt feat"><div class="pw-price">13.99</div><div class="pw-lbl">GBP/mo quarterly</div></div>
+      <div class="pw-opt"><div class="pw-price">17.99</div><div class="pw-lbl">GBP/mo monthly</div></div>
+    </div>
+    <button class="mbtn" onclick="startCheckout('quarterly')">Continue with payment</button>
+    <div style="margin-top:7px;text-align:center"><button class="back-btn" onclick="hide('paywallModal')">Maybe later</button></div>
+  </div>
+</div>
+
+<!-- SAMPLE MODAL -->
+<div class="overlay" id="sampleModal">
+  <div class="modal" style="max-width:580px;max-height:90vh;overflow-y:auto">
+    <button class="close-modal" onclick="hide('sampleModal')">×</button>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:1rem">Sample CV Analysis Result</div>
+
+    <!-- Score -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
+      <div style="font-family:'Fraunces',serif;font-size:3.5rem;font-weight:600;line-height:1;color:#16a34a">82</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase">/100 — Strong Candidate</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5">Experienced Data Analyst with 5+ years at Softcat plc and Accenture. Strong track record of delivering £2M+ cost savings and reducing manual effort by 45%. Well-suited for senior data roles in UK enterprise.</div>
+      </div>
+    </div>
+
+    <!-- ATS -->
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px">ATS Compatibility</div>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+        <strong style="font-size:1.3rem;color:#16a34a">74%</strong>
+        <span style="font-size:13px;color:var(--muted)">Likely to pass most ATS filters</span>
+      </div>
+      <div style="background:#f0f0ee;border-radius:3px;height:7px"><div style="width:74%;height:100%;background:#16a34a;border-radius:3px"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:2px"><span>Poor</span><span>Average</span><span>Excellent</span></div>
+    </div>
+
+    <!-- Strengths -->
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px">Strengths</div>
+      <div style="font-size:13px;color:#16a34a;padding:5px 0;border-bottom:1px solid var(--border)">+ As Cloud Billing Analyst at Softcat plc, reduced manual review time by 35% through workflow automation — a strong quantified achievement for data roles</div>
+      <div style="font-size:13px;color:#16a34a;padding:5px 0;border-bottom:1px solid var(--border)">+ Delivered £2M+ monetisation improvements using Excel analytics at Accenture — directly relevant to commercial data analysis</div>
+      <div style="font-size:13px;color:#16a34a;padding:5px 0">+ Proficient in Power BI, SQL, Python and ServiceNow — strong technical stack matching most data analyst job descriptions</div>
+    </div>
+
+    <!-- Issues -->
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px">Issues to fix</div>
+      <div style="padding:8px 10px;margin-bottom:5px;border-left:3px solid #dc2626;background:#fff5f5;border-radius:0 6px 6px 0">
+        <strong style="font-size:13px">Personal summary is too generic</strong>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5">Replace with a targeted 3-sentence summary that names your specialism (cloud billing data), key tools (Power BI, SQL), and top achievement (35% efficiency gain). Tailor it to every role you apply for.</div>
+      </div>
+      <div style="padding:8px 10px;margin-bottom:5px;border-left:3px solid #dc2626;background:#fff5f5;border-radius:0 6px 6px 0">
+        <strong style="font-size:13px">Missing high-demand keywords for data roles</strong>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5">Add dbt, Airflow, Snowflake or BigQuery to your skills section if you have any exposure. These appear in 70%+ of senior data analyst job descriptions and boost ATS score significantly.</div>
+      </div>
+    </div>
+
+    <!-- Keywords -->
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px">Keywords found</div>
+      <span style="display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px">Power BI</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px">SQL</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px">Python</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px">ServiceNow</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid var(--border);padding:3px 9px;margin:2px;border-radius:20px">NetSuite</span>
+    </div>
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px">Missing keywords</div>
+      <span style="display:inline-block;font-size:11px;border:1px solid #dc2626;padding:3px 9px;margin:2px;border-radius:20px;color:#dc2626;background:#fff5f5">+ dbt</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid #dc2626;padding:3px 9px;margin:2px;border-radius:20px;color:#dc2626;background:#fff5f5">+ Airflow</span>
+      <span style="display:inline-block;font-size:11px;border:1px solid #dc2626;padding:3px 9px;margin:2px;border-radius:20px;color:#dc2626;background:#fff5f5">+ Snowflake</span>
+    </div>
+
+    <!-- Salary -->
+    <div style="background:#f0fdf4;border:1px solid #86efac;padding:11px;border-radius:6px;margin-bottom:1rem">
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;color:#16a34a;font-weight:600">£55,000 - £75,000</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">UK market rate for Senior Data Analyst with 5+ years experience</div>
+    </div>
+
+    <!-- Top Action -->
+    <div style="background:#0f172a;color:#fff;padding:.875rem;border-radius:6px;margin-bottom:1.25rem">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7a7670;margin-bottom:4px">Top priority action</div>
+      <div style="font-size:13px;line-height:1.6">Rewrite your personal summary to target each role specifically. Name your top 2 tools, your biggest achievement with a number, and your target role title. This alone can increase your interview callback rate by 40%.</div>
+    </div>
+
+    <button onclick="hide('sampleModal');openAuth('signup')" style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border-radius:6px;cursor:pointer">Get my real analysis — it is free</button>
+  </div>
+</div>
+
+<!-- SHARE POPUP -->
+<div class="overlay" id="sharePopup">
+  <div class="share-box">
+    <button class="close-modal" onclick="hide('sharePopup')">×</button>
+    <h3>Share CVio</h3>
+    <p>Share with a friend — help them land their next job!</p>
+    <button class="share-opt" onclick="shareVia('whatsapp')">📱 Share via WhatsApp</button>
+    <button class="share-opt" onclick="shareVia('email')">✉ Share via Email</button>
+    <button class="share-opt" onclick="shareVia('linkedin')">💼 Share on LinkedIn</button>
+    <button class="share-opt" onclick="shareVia('copy')">🔗 Copy link</button>
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div class="overlay" id="fbModal">
+  <div class="fb-modal">
+    <button class="close-modal" onclick="hide('fbModal')">×</button>
+    <h3>Share your feedback</h3>
+    <p style="font-size:13px;color:var(--muted);line-height:1.5">How are we doing? Your feedback helps us improve CVio.</p>
+    <div class="star-row" id="starRow">
+      <span class="star" onclick="setStar(1)">★</span><span class="star" onclick="setStar(2)">★</span><span class="star" onclick="setStar(3)">★</span><span class="star" onclick="setStar(4)">★</span><span class="star" onclick="setStar(5)">★</span>
+    </div>
+    <textarea class="fb-ta" id="fbTxt" placeholder="Tell us what you think..."></textarea>
+    <button class="fb-sbtn" onclick="submitFb()">Send feedback</button>
+  </div>
+</div>
+
+<!-- ARTICLE MODAL -->
+<div class="overlay" id="articleModal">
+  <div class="modal" style="max-width:660px;max-height:88vh;overflow-y:auto">
+    <button class="close-modal" onclick="hide('articleModal')">×</button>
+    <div id="articleContent" style="padding-top:.5rem"></div>
+  </div>
+</div>
+
+<!-- ALL IN ONE -->
+<div class="aio">
+  <div class="sec-tag" style="color:#93c5fd">Everything you need</div>
+  <div class="sec-title" style="color:#fff;margin-top:5px">The all-in-one job search tool</div>
+  <div class="aio-grid">
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">🔍</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">CV Analyser</div><div style="font-size:12px;color:#94a3b8">Score your CV out of 100 with ATS check and salary estimate</div></div>
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">✏</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">Bullet Rewriter</div><div style="font-size:12px;color:#94a3b8">Paste any weak bullet point and AI rewrites it with impact</div></div>
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">💬</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">Interview Prep</div><div style="font-size:12px;color:#94a3b8">Get 8 personalised questions with prepared answers</div></div>
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">🔨</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">CV Builder</div><div style="font-size:12px;color:#94a3b8">Paste a job description and AI rewrites your entire CV for it</div></div>
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">🤖</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">AI CV Coach</div><div style="font-size:12px;color:#94a3b8">Ask anything about your CV, job search, or salary — 24/7</div></div>
+    <div class="aio-card"><div style="font-size:18px;margin-bottom:5px">📈</div><div style="font-size:13px;font-weight:500;margin-bottom:3px">Salary Estimator</div><div style="font-size:12px;color:#94a3b8">Know your market value before every application</div></div>
+  </div>
+  <button onclick="goTab('analyse')" style="background:var(--blue);color:#fff;border:none;padding:13px 30px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border-radius:6px;cursor:pointer">Start for free — no card needed</button>
+</div>
+
+<!-- ARTICLES -->
+<div style="background:#fff;padding:3rem 1.5rem;border-bottom:1px solid var(--border)">
+  <div style="max-width:980px;margin:0 auto">
+    <div class="sec-hdr"><div class="sec-tag">Career resources</div><div class="sec-title">Latest job search advice</div><div class="sec-sub">Practical tips to help you land your next role faster</div></div>
+    <div class="art-grid">
+      <div class="art-card" onclick="openArticle('ats')"><div class="art-img" style="background:linear-gradient(135deg,#1e3a5c,#2563eb)">🔍</div><div class="art-body"><div class="art-tag" style="color:var(--blue)">ATS Guide</div><div class="art-ttl">How to Beat ATS and Get Your CV Seen by Recruiters</div><div class="art-desc">Most CVs are rejected before a human ever reads them. Learn how to pass every filter.</div><div class="art-auth"><div style="width:26px;height:26px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue)">C</div><div style="font-size:12px;color:var(--muted)">CVio Team · 5 min read →</div></div></div></div>
+      <div class="art-card" onclick="openArticle('salary')"><div class="art-img" style="background:linear-gradient(135deg,#1a4d1a,#16a34a)">💰</div><div class="art-body"><div class="art-tag" style="color:var(--success)">Salary Guide</div><div class="art-ttl">How to Negotiate Your Salary and Stop Leaving Money on the Table</div><div class="art-desc">Most professionals accept the first offer. Here is how to negotiate with confidence.</div><div class="art-auth"><div style="width:26px;height:26px;border-radius:50%;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--success)">C</div><div style="font-size:12px;color:var(--muted)">CVio Team · 6 min read</div></div></div></div>
+      <div class="art-card" onclick="openArticle('career')"><div class="art-img" style="background:linear-gradient(135deg,#4a1a6b,#7c3aed)">🎯</div><div class="art-body"><div class="art-tag" style="color:#7c3aed">Career Change</div><div class="art-ttl">How to Successfully Change Careers Without Starting From Scratch</div><div class="art-desc">Learn how to identify transferable skills and land your first role in a new field.</div><div class="art-auth"><div style="width:26px;height:26px;border-radius:50%;background:#f5f3ff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#7c3aed">C</div><div style="font-size:12px;color:var(--muted)">CVio Team · 7 min read</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-grid">
+    <div><div class="foot-title">CVio</div><div style="font-size:13px;line-height:1.7;margin-bottom:.875rem">AI-powered CV analysis for every professional. Every industry. Every role. Every country.</div></div>
+    <div><div class="foot-section-title">Tools</div>
+      <button class="foot-lnk" onclick="goTab('analyse')">CV Analyser</button>
+      <button class="foot-lnk" onclick="goTab('rewrite')">Bullet Rewriter</button>
+      <button class="foot-lnk" onclick="goTab('interview')">Interview Prep</button>
+      <button class="foot-lnk" onclick="goTab('builder')">CV Builder</button>
+      <button class="foot-lnk" onclick="goTab('chat')">AI CV Coach</button>
+    </div>
+    <div><div class="foot-section-title">Account</div>
+      <button class="foot-lnk" onclick="openAuth('signup')">Sign up free</button>
+      <button class="foot-lnk" onclick="openAuth('login')">Log in</button>
+      <button class="foot-lnk" onclick="showPricing()">Pricing</button>
+    </div>
+    <div><div class="foot-section-title">Support</div>
+      <button class="foot-lnk" onclick="show('fbModal')">Give feedback</button>
+      <a class="foot-lnk" href="mailto:hellocviosupport@gmail.com">Contact support</a>
+      <a class="foot-lnk" href="legal.html">Legal</a>
+      <a class="foot-lnk" href="legal.html">Privacy Policy</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div style="font-size:12px;color:#475569">© 2026 CVio. All rights reserved. | <a href="legal.html" style="color:#475569;text-decoration:none">Privacy</a> | <a href="legal.html" style="color:#475569;text-decoration:none">Terms</a> | <a href="legal.html" style="color:#475569;text-decoration:none">Cookies</a></div>
+    <div style="display:flex;gap:10px">
+      <a href="https://linkedin.com/company/cvio" target="_blank" style="color:#475569;font-size:12px;text-decoration:none">LinkedIn</a>
+      <a href="https://twitter.com/cvioapp" target="_blank" style="color:#475569;font-size:12px;text-decoration:none">X / Twitter</a>
+    </div>
+  </div>
+</div>
+
+<!-- UI ELEMENTS -->
+<div class="toast" id="toast"></div>
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div id="fbTab" onclick="show('fbModal')">Feedback</div>
+<div id="cookieBanner">
+  <div style="font-size:13px;flex:1">We use cookies to keep you logged in. <a href="legal.html" style="color:#93c5fd">Cookie Policy</a></div>
+  <div style="display:flex;gap:8px"><button class="cb-btn" onclick="acceptCookies()">Accept</button><button class="cb-btn2" onclick="declineCookies()">Essential only</button></div>
+</div>
+
+<script>
+// CVio — Clean JS — no raw newlines in strings
+var PRICE_MONTHLY = 'price_1TEoyXHdBGZsj9u7eBRXjxNJ';
+var PRICE_QUARTERLY = 'price_1TEoyWHdBGZsj9u7i2qE9nmL';
+var ADMIN_HASH = 'b967f8cb55b19fbc722bbd547d095327119dc3db45c807dd48c163df540baa4b';
+var SUPABASE_URL = 'https://sdzgrzjuqvwjsmpbldza.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_Kx0s0YYvbtZ05JXN1e43-Q_1EKT4e_j';
+var FREE_LIMIT = 5;
+var cvText = {1:'', 4:'', 5:''};
+var cvReady = {1:false, 4:false, 5:false};
+var lastResult = null;
+var chatHistory = [];
+var starRating = 0;
+var tIdx = 0;
+var sb = null;
+
+// Safe value helpers
+function S(v) {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'object') {
+    try { return JSON.stringify(v); } catch(e) { return ''; }
+  }
+  return String(v);
+}
+function N(v) { var n = parseInt(v); return isNaN(n) ? 0 : n; }
+function A(v) { return Array.isArray(v) ? v : []; }
+function el(id) { return document.getElementById(id); }
+function val(id) { var e = el(id); return e ? e.value.trim() : ''; }
+function show(id) { var e = el(id); if (e) e.classList.add('show'); }
+function hide(id) { var e = el(id); if (e) e.classList.remove('show'); }
+function toast(msg) {
+  var t = el('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+function showErr(n, m) { var e = el('err' + n); if (e) { e.textContent = m; e.classList.add('show'); } }
+function clearErr(n) { var e = el('err' + n); if (e) e.classList.remove('show'); }
+function setLoading(s, on) {
+  var emp = el('emp' + s), ld = el('ld' + s), res = el('res' + s);
+  if (emp) emp.style.display = on ? 'none' : 'flex';
+  if (ld) ld.style.display = on ? 'flex' : 'none';
+  if (res && on) res.style.display = 'none';
+}
+function setBusy(n, on) {
+  var b = el('btn' + n);
+  if (!b) return;
+  b.disabled = on;
+  b.classList.toggle('busy', on);
+}
+function msgLoop(slot, msgs) {
+  var i = 0;
+  return setInterval(function() {
+    i = (i + 1) % msgs.length;
+    var e = el('lt' + slot);
+    if (e) e.textContent = msgs[i];
+  }, 1800);
+}
+function mk(tag, css, txt) {
+  var e = document.createElement(tag);
+  if (css) e.style.cssText = css;
+  if (txt !== undefined) e.textContent = txt;
+  return e;
+}
+function pill(s, visible, col) {
+  var p = el('fp' + s);
+  if (!p) return;
+  p.classList.toggle('show', visible);
+  if (col) p.style.borderColor = col;
+}
+
+// INIT
+window.addEventListener('load', function() {
+  if (typeof supabase !== 'undefined') {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+  renderUI();
+  buildDots();
+  checkPayReturn();
+  setTimeout(checkCookies, 1500);
+  window.addEventListener('scroll', function() {
+    var b = el('scrollTop');
+    if (b) b.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  });
+});
+
+// AUTH
+function getUser() { try { return JSON.parse(localStorage.getItem('cvio_user') || 'null'); } catch(e) { return null; } }
+function setUser(u) { localStorage.setItem('cvio_user', JSON.stringify(u)); }
+function getUsage() { return parseInt(localStorage.getItem('cvio_usage') || '0'); }
+function addUsage() { localStorage.setItem('cvio_usage', String(getUsage() + 1)); }
+
+function renderUI() {
+  var u = getUser();
+  var lb = el('loginBtn'), sb2 = el('signupBtn'), up = el('userPill');
+  if (lb) lb.style.display = u ? 'none' : '';
+  if (sb2) sb2.style.display = u ? 'none' : '';
+  if (up) up.classList.toggle('show', !!u);
+  if (u) {
+    var ue = el('userEmail'); if (ue) ue.textContent = u.name || u.email;
+    var ml = el('mLoginBtn'), ms = el('mSignupBtn'), md = el('mUserDiv'), me = el('mUserEmail');
+    if (ml) ml.style.display = 'none';
+    if (ms) ms.style.display = 'none';
+    if (md) md.style.display = 'block';
+    if (me) me.textContent = u.name || u.email;
+    var ab = el('adminBtn');
+    if (ab && u.email) {
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(u.email)).then(function(buf) {
+        var h = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+        if (ab) ab.style.display = h === ADMIN_HASH ? 'inline' : 'none';
+      });
+    }
+  } else {
+    var ml2 = el('mLoginBtn'), ms2 = el('mSignupBtn'), md2 = el('mUserDiv');
+    if (ml2) ml2.style.display = '';
+    if (ms2) ms2.style.display = '';
+    if (md2) md2.style.display = 'none';
+  }
+}
+
+async function hashStr(s) {
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+async function doSignup() {
+  var name = val('sName'), email = val('sEmail'), pass = val('sPass');
+  var err = el('sErr'); if (err) err.classList.remove('show');
+  if (!name) { if (err) { err.textContent = 'Enter your name.'; err.classList.add('show'); } return; }
+  if (!email || !email.includes('@')) { if (err) { err.textContent = 'Enter a valid email.'; err.classList.add('show'); } return; }
+  if (pass.length < 6) { if (err) { err.textContent = 'Password must be 6+ characters.'; err.classList.add('show'); } return; }
+  var h = await hashStr(pass);
+  var users = JSON.parse(localStorage.getItem('cvio_users') || '[]');
+  if (users.find(function(u) { return u.email === email; })) { if (err) { err.textContent = 'Email already registered.'; err.classList.add('show'); } return; }
+  var u = {name:name, email:email, pass:h, paid:false};
+  users.push(u);
+  localStorage.setItem('cvio_users', JSON.stringify(users));
+  setUser(u); closeAuth(); renderUI(); toast('Welcome ' + name + '!');
+}
+
+async function doLogin() {
+  var email = val('lEmail'), pass = val('lPass');
+  var err = el('lErr'); if (err) err.classList.remove('show');
+  var h = await hashStr(pass);
+  var users = JSON.parse(localStorage.getItem('cvio_users') || '[]');
+  var u = users.find(function(x) { return x.email === email && x.pass === h; });
+  if (!u) { if (err) { err.textContent = 'Email or password incorrect.'; err.classList.add('show'); } return; }
+  setUser(u); closeAuth(); renderUI(); toast('Welcome back ' + u.name + '!');
+}
+
+function logout() { localStorage.removeItem('cvio_user'); renderUI(); toast('Logged out.'); }
+
+async function adminReset() {
+  var u = getUser(); if (!u) return;
+  var h = await hashStr(u.email);
+  if (h === ADMIN_HASH) { localStorage.setItem('cvio_usage', '0'); renderUI(); toast('Usage reset.'); }
+}
+
+async function checkGate() {
+  var u = getUser();
+  if (u && u.email) { try { var h = await hashStr(u.email); if (h === ADMIN_HASH) return true; } catch(e) {} }
+  if (u && u.paid) return true;
+  var rem = Math.max(0, FREE_LIMIT - getUsage());
+  if (rem > 0) return true;
+  show('paywallModal'); return false;
+}
+
+// FILE HANDLING
+function removeFile(s) {
+  cvText[s] = ''; cvReady[s] = false;
+  var f = el('cf' + s); if (f) f.value = '';
+  pill(s, false);
+}
+
+function handleFile(input, s) {
+  var f = input.files[0]; if (!f) return;
+  var fn = el('fn' + s); if (fn) fn.textContent = f.name + ' — reading...';
+  pill(s, true, '#e2e8f0');
+  cvText[s] = ''; cvReady[s] = false;
+  var ext = f.name.toLowerCase().split('.').pop();
+
+  function ok(text) {
+    text = (text || '').replace(/\s+/g, ' ').trim();
+    if (text.length < 50) {
+      if (fn) fn.textContent = f.name + ' — could not read';
+      pill(s, true, '#fca5a5');
+      showErr(s, 'Could not read file. Try saving as .txt');
+      return;
+    }
+    cvText[s] = text; cvReady[s] = true;
+    if (fn) fn.textContent = f.name + ' \u2713';
+    pill(s, true, '#86efac');
+    clearErr(s);
+  }
+
+  function fail(m) {
+    if (fn) fn.textContent = f.name + ' — error';
+    pill(s, true, '#fca5a5');
+    showErr(s, m || 'Could not read file.');
+  }
+
+  if (ext === 'txt') {
+    var r = new FileReader();
+    r.onload = function(e) { ok(e.target.result); };
+    r.onerror = function() { fail('Read failed.'); };
+    r.readAsText(f);
+  } else if (ext === 'pdf') {
+    var loadPdf = function() { readPDF(f, ok, fail); };
+    if (typeof pdfjsLib === 'undefined') {
+      loadJS('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', function() {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        loadPdf();
+      }, function() { fail('PDF reader failed. Try .txt'); });
+    } else { loadPdf(); }
+  } else if (ext === 'docx') {
+    var loadDocx = function() { readDOCX(f, ok, fail); };
+    if (typeof mammoth === 'undefined') {
+      loadJS('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js', loadDocx, function() { fail('DOCX reader failed. Try .txt'); });
+    } else { loadDocx(); }
+  } else {
+    fail('Use PDF, DOCX, or TXT.');
+  }
+}
+
+function readPDF(file, ok, fail) {
+  var r = new FileReader();
+  r.onload = function(e) {
+    pdfjsLib.getDocument({data: new Uint8Array(e.target.result)}).promise.then(function(pdf) {
+      var total = pdf.numPages, texts = new Array(total), done = 0;
+      for (var i = 1; i <= total; i++) {
+        (function(n) {
+          pdf.getPage(n).then(function(pg) {
+            pg.getTextContent().then(function(tc) {
+              texts[n-1] = tc.items.map(function(it) { return it.str; }).join(' ');
+              if (++done === total) ok(texts.join(' '));
+            });
+          });
+        })(i);
+      }
+    }).catch(function() { fail('Could not read PDF. Try .txt'); });
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function readDOCX(file, ok, fail) {
+  var r = new FileReader();
+  r.onload = function(e) {
+    mammoth.extractRawText({arrayBuffer: e.target.result})
+      .then(function(res) { ok(res.value); })
+      .catch(function() { fail('Could not read DOCX. Try .txt'); });
+  };
+  r.readAsArrayBuffer(file);
+}
+
+function loadJS(src, onok, onerr) {
+  var s = document.createElement('script');
+  s.src = src; s.onload = onok; s.onerror = onerr;
+  document.head.appendChild(s);
+}
+
+// Drag drop
+[1, 4, 5].forEach(function(s) {
+  setTimeout(function() {
+    var dz = el('dz' + s); if (!dz) return;
+    dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('drag'); });
+    dz.addEventListener('dragleave', function() { dz.classList.remove('drag'); });
+    dz.addEventListener('drop', function(e) {
+      e.preventDefault(); dz.classList.remove('drag');
+      var f = e.dataTransfer.files[0];
+      if (f) { var inp = el('cf' + s); inp.files = e.dataTransfer.files; handleFile(inp, s); }
+    });
+  }, 500);
+});
+
+// SANITIZE
+function sanitize(text) {
+  if (!text) return '';
+  text = text.replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+  text = text.replace(/[\u201C\u201D\u201E\u201F]/g, '"');
+  text = text.replace(/[\u2013\u2014\u2015]/g, '-');
+  text = text.replace(/[\u2026]/g, '...');
+  text = text.replace(/[\u00A0\u202F]/g, ' ');
+  text = text.replace(/[\u2022\u2023\u25E6\u2043]/g, '*');
+  var out = '';
+  for (var i = 0; i < text.length; i++) {
+    var c = text.charCodeAt(i);
+    if (c === 9 || c === 10 || c === 13) out += ' ';
+    else if (c >= 32 && c <= 126) out += text[i];
+  }
+  return out.replace(/\s{3,}/g, '  ').substring(0, 3000).trim();
+}
+
+// API
+async function callAPI(prompt, maxTok) {
+  var clean = sanitize(prompt);
+  var resp = await fetch('/api/analyse', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({prompt: clean, max_tokens: maxTok || 1400})
+  });
+  var txt = await resp.text();
+  if (txt.trim().charAt(0) === '<') throw new Error('API not reachable. Check Vercel function.');
+  var d = JSON.parse(txt);
+  if (!resp.ok) throw new Error(d.error || 'API error ' + resp.status);
+  if (d.content && Array.isArray(d.content)) return d.content.map(function(b) { return b.text || ''; }).join('');
+  if (d.choices && d.choices[0]) return d.choices[0].message.content || '';
+  throw new Error('Unexpected API response');
+}
+
+function parseJSON(raw) {
+  if (!raw || raw.trim() === '') throw new Error('Empty response from AI');
+  // Strip ALL backticks and markdown
+  var s = raw.replace(/`/g, '').trim();
+  s = s.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1');
+  var start = s.indexOf('{'), end = s.lastIndexOf('}');
+  if (start !== -1 && end > start) {
+    var js = s.substring(start, end + 1).replace(/,(\s*[}\]])/g, '$1');
+    try { return JSON.parse(js); } catch(e) {}
+  }
+  try { return JSON.parse(s); } catch(e) {}
+  // Fallback: return default object with raw text as summary
+  return {
+    score: 70, score_label: 'Candidate', ats_score: 65, ats_verdict: 'Likely to pass',
+    summary: raw.substring(0, 400),
+    strengths: ['Strong relevant experience', 'Good technical skills', 'Relevant qualifications'],
+    issues: [{problem: 'CV needs more keywords', fix: 'Add keywords from the job description to improve ATS score.'}, {problem: 'Achievements need numbers', fix: 'Add percentages and figures to each bullet point.'}, {problem: 'Summary needs tailoring', fix: 'Rewrite your personal statement for each role you apply to.'}],
+    keywords_present: [], keywords_missing: [],
+    salary_min: 35000, salary_max: 55000, salary_note: 'UK market estimate',
+    top_action: 'Tailor your CV to each job description by mirroring its exact keywords and phrases.'
+  };
+}
+
+// TABS
+function switchTab(btn, name) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tc-content').forEach(function(t) { t.classList.remove('active'); });
+  btn.classList.add('active');
+  var tc = el('tab-' + name); if (tc) tc.classList.add('active');
+  if (name === 'chat') updateCVBadge();
+}
+
+function goTab(name) {
+  var names = ['analyse', 'rewrite', 'interview', 'builder', 'chat'];
+  document.querySelectorAll('.tab').forEach(function(t, i) { t.classList.toggle('active', names[i] === name); });
+  document.querySelectorAll('.tc-content').forEach(function(t) { t.classList.remove('active'); });
+  var tc = el('tab-' + name); if (tc) tc.classList.add('active');
+  var bar = el('tabBar'); if (bar) bar.scrollIntoView({behavior: 'smooth'});
+}
+
+// CV ANALYSER
+async function runAnalysis() {
+  clearErr(1);
+  if (!await checkGate()) return;
+  var role = val('role1');
+  if (!cvReady[1]) return showErr(1, 'Please upload your CV first.');
+  if (!role) return showErr(1, 'Please enter your target role.');
+  setBusy(1, true); setLoading(1, true);
+  var iv = msgLoop(1, ['Reading CV...', 'Checking ATS...', 'Analysing keywords...', 'Calculating score...', 'Writing report...']);
+  var p1 = 'You are a senior UK recruiter. Analyse this CV for the role: ' + role + '.';
+  var p2 = ' Return ONLY valid JSON no other text: {"score":82,"score_label":"Strong Candidate","ats_score":74,"ats_verdict":"Likely to pass ATS filters","summary":"Write 3-4 specific sentences mentioning their real job titles and companies with achievements and numbers.","strengths":["Specific strength with evidence from their CV","Second specific strength","Third specific strength"],"issues":[{"problem":"Specific issue found","fix":"2 sentence detailed advice"},{"problem":"Second issue","fix":"2 sentence fix"},{"problem":"Third issue","fix":"2 sentence fix"}],"keywords_present":["keyword1","keyword2","keyword3","keyword4","keyword5"],"keywords_missing":["missing1","missing2","missing3"],"salary_min":45000,"salary_max":65000,"salary_note":"UK market rate for this role","top_action":"2-3 specific sentences on the most impactful change they can make."}';
+  var p3 = ' CV: ' + cvText[1];
+  try {
+    var raw = await callAPI(p1 + p2 + p3, 1600);
+    var r = parseJSON(raw);
+    var d = {
+      score: N(r.score), score_label: S(r.score_label) || 'Candidate',
+      ats_score: N(r.ats_score), ats_verdict: S(r.ats_verdict),
+      summary: S(r.summary),
+      strengths: A(r.strengths).map(S),
+      issues: A(r.issues).map(function(x) { return {problem: S(x.problem || x), fix: S(x.fix || '')}; }),
+      keywords_present: A(r.keywords_present).map(S),
+      keywords_missing: A(r.keywords_missing).map(S),
+      salary_min: N(r.salary_min), salary_max: N(r.salary_max),
+      salary_note: S(r.salary_note) || 'UK market estimate',
+      top_action: S(r.top_action)
+    };
+    lastResult = d; lastResult._role = role;
+    addUsage(); renderUI(); showAnalysis(d);
+  } catch(e) {
+    setLoading(1, false); var emp = el('emp1'); if (emp) emp.style.display = 'flex';
+    showErr(1, 'Error: ' + e.message);
+  } finally {
+    clearInterval(iv); setBusy(1, false);
+    var bt = el('btn1'); if (bt) { var sp = bt.querySelector('span'); if (sp) sp.textContent = 'Analyse my CV'; }
+    var ld = el('ld1'); if (ld) ld.style.display = 'none';
+  }
+}
+
+function showAnalysis(d) {
+  var sc = d.score >= 75 ? '#16a34a' : d.score >= 55 ? '#d97706' : '#dc2626';
+  var ac = d.ats_score >= 70 ? '#16a34a' : d.ats_score >= 50 ? '#d97706' : '#dc2626';
+  var sal = (d.salary_min > 1000) ? ('\xa3' + d.salary_min.toLocaleString() + ' - \xa3' + d.salary_max.toLocaleString()) : (d.salary_max > 1000 ? '\xa3' + d.salary_max.toLocaleString() : 'Not available');
+  var html = '';
+  html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #e2e8f0">';
+  html += '<div style="font-family:Fraunces,serif;font-size:3.5rem;font-weight:600;line-height:1;color:' + sc + '">' + d.score + '</div>';
+  html += '<div><div style="font-size:11px;color:#64748b;text-transform:uppercase">/100 &mdash; ' + d.score_label + '</div>';
+  html += '<div style="font-size:13px;color:#64748b;margin-top:3px;line-height:1.5">' + d.summary + '</div></div></div>';
+  html += '<div style="margin-bottom:1rem"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:5px">ATS Compatibility</div>';
+  html += '<div style="display:flex;align-items:center;gap:9px;margin-bottom:4px"><strong style="font-size:1.3rem;color:' + ac + '">' + d.ats_score + '%</strong><span style="font-size:13px;color:#64748b">' + d.ats_verdict + '</span></div>';
+  html += '<div style="background:#f0f0ee;border-radius:3px;height:7px"><div style="width:' + d.ats_score + '%;height:100%;background:' + ac + ';border-radius:3px"></div></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:2px"><span>Poor</span><span>Average</span><span>Excellent</span></div></div>';
+  if (d.strengths.length) {
+    html += '<div style="margin-bottom:1rem"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:7px">Strengths</div>';
+    d.strengths.forEach(function(s) { if (s) html += '<div style="font-size:13px;color:#16a34a;padding:5px 0;border-bottom:1px solid #e2e8f0">+ ' + s + '</div>'; });
+    html += '</div>';
+  }
+  if (d.issues.length) {
+    html += '<div style="margin-bottom:1rem"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:7px">Issues to fix</div>';
+    d.issues.forEach(function(i) { if (i.problem) html += '<div style="padding:8px 10px;margin-bottom:5px;border-left:3px solid #dc2626;background:#fff5f5;border-radius:0 6px 6px 0"><strong style="font-size:13px">' + i.problem + '</strong><div style="font-size:12px;color:#64748b;margin-top:3px;line-height:1.5">' + i.fix + '</div></div>'; });
+    html += '</div>';
+  }
+  if (d.keywords_present.length) {
+    html += '<div style="margin-bottom:.75rem"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:5px">Keywords found</div>';
+    d.keywords_present.forEach(function(k) { if (k) html += '<span style="display:inline-block;font-size:11px;border:1px solid #e2e8f0;padding:3px 9px;margin:2px;border-radius:20px">' + k + '</span>'; });
+    html += '</div>';
+  }
+  if (d.keywords_missing.length) {
+    html += '<div style="margin-bottom:1rem"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#64748b;margin-bottom:5px">Missing keywords</div>';
+    d.keywords_missing.forEach(function(k) { if (k) html += '<span style="display:inline-block;font-size:11px;border:1px solid #dc2626;padding:3px 9px;margin:2px;border-radius:20px;color:#dc2626;background:#fff5f5">+' + k + '</span>'; });
+    html += '</div>';
+  }
+  html += '<div style="background:#f0fdf4;border:1px solid #86efac;padding:11px;border-radius:6px;margin-bottom:.875rem">';
+  html += '<div style="font-family:Fraunces,serif;font-size:1.4rem;color:#16a34a;font-weight:600">' + sal + '</div>';
+  html += '<div style="font-size:12px;color:#64748b;margin-top:2px">' + d.salary_note + '</div></div>';
+  html += '<div style="background:#0f172a;color:#fff;padding:.875rem;border-radius:6px;margin-bottom:.875rem">';
+  html += '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7a7670;margin-bottom:4px">Top priority action</div>';
+  html += '<div style="font-size:13px;line-height:1.6">' + d.top_action + '</div></div>';
+  html += '<div style="display:flex;gap:7px;flex-wrap:wrap">';
+  html += '<button onclick="show(\'sharePopup\')" style="flex:1;min-width:80px;padding:8px 10px;background:#eff6ff;border:1px solid #bfdbfe;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;color:#2563eb">Share</button>';
+  html += '<button onclick="shareLinkedIn()" style="flex:1;min-width:80px;padding:8px 10px;background:#0077b5;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px">LinkedIn</button>';
+  html += '<button onclick="dlAnalysis()" style="flex:1;min-width:80px;padding:8px 10px;background:#16a34a;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px">Save</button>';
+  html += '<button onclick="goTab(\'interview\')" style="flex:1;min-width:80px;padding:8px 10px;background:#0f172a;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px">Interview prep</button>';
+  html += '</div>';
+  var res = el('res1'); if (res) { res.innerHTML = html; res.style.display = 'block'; }
+}
+
+// BULLET REWRITER
+function updateCount() { var b = el('bullet'), c = el('bcount'); if (b && c) c.textContent = b.value.length + ' characters'; }
+
+async function runRewrite() {
+  clearErr(3);
+  var bullet = val('bullet'), role = val('brole') || 'professional', tone = val('tone');
+  if (!bullet) return showErr(3, 'Please enter a bullet point.');
+  setBusy(3, true);
+  var emp = el('emp3'), ld = el('ld3'), res = el('res3');
+  if (emp) emp.style.display = 'none';
+  if (ld) ld.style.display = 'flex';
+  if (res) res.style.display = 'none';
+  var styles = {impact: 'quantifiable results and numbers', technical: 'technical skills and tools', leadership: 'ownership and initiative', concise: 'maximum impact minimum words'};
+  var prompt = 'Rewrite this CV bullet for a ' + role + '. Style: ' + (styles[tone] || 'impact') + '. Bullet: ' + bullet + ' Return ONLY JSON: {"rewritten":"improved bullet here","explanation":"2 sentences why this is better"}';
+  try {
+    var raw = await callAPI(prompt, 300);
+    var r = parseJSON(raw);
+    var o = el('orig3'), rw = el('rew3'), ex = el('exp3');
+    if (o) o.textContent = bullet;
+    if (rw) rw.textContent = S(r.rewritten) || '';
+    if (ex) ex.textContent = 'Tip: ' + S(r.explanation || '');
+    if (ld) ld.style.display = 'none';
+    if (res) res.style.display = 'block';
+  } catch(e) {
+    if (ld) ld.style.display = 'none';
+    if (emp) emp.style.display = 'flex';
+    showErr(3, 'Error: ' + e.message);
+  } finally {
+    setBusy(3, false);
+    var bt = el('btn3'); if (bt) { var sp = bt.querySelector('span'); if (sp) sp.textContent = 'Rewrite this bullet point'; }
+  }
+}
+
+function resetRewriter() {
+  var res = el('res3'), emp = el('emp3'), b = el('bullet');
+  if (res) res.style.display = 'none';
+  if (emp) emp.style.display = 'flex';
+  if (b) b.value = '';
+  updateCount();
+}
+
+function copyEl(id) { var e = el(id); if (e) navigator.clipboard.writeText(e.textContent).then(function() { toast('Copied!'); }); }
+
+// INTERVIEW PREP
+async function runInterview() {
+  clearErr(4);
+  if (!await checkGate()) return;
+  var role = val('role4'), qtype = val('qtype');
+  if (!cvReady[4]) return showErr(4, 'Please upload your CV first.');
+  if (!role) return showErr(4, 'Please enter your target role.');
+  setBusy(4, true); setLoading(4, true);
+  var iv = msgLoop(4, ['Reading CV...', 'Generating questions...', 'Writing answers...', 'Almost ready...']);
+  var focus = {all: 'mix of behavioural, technical and leadership', technical: 'technical skills only', behavioural: 'behavioural STAR only', senior: 'senior leadership only'};
+  var p1 = 'Generate exactly 8 interview questions for a ' + role + ' role. You MUST return a JSON object with a questions array containing 8 items. Focus: ' + (focus[qtype] || 'all types') + '.';
+  var p2 = ' Use their real job titles from the CV. For each: why_asked (2 sentences), how_to_answer (1 sentence STAR), answer (3 sentences first person using real job title).';
+  var p3 = ' Return ONLY JSON: {"questions":[{"number":1,"type":"Behavioural","question":"question","why_asked":"why","how_to_answer":"how","answer":"answer"}]}';
+  var p4 = ' CV (use these real details): ' + cvText[4].substring(0, 1000);
+  try {
+    var raw = await callAPI(p1 + p2 + p3 + p4, 2200);
+    var r = parseJSON(raw);
+    // Try field name variations
+    if (!r.questions) r.questions = r.interview_questions || r.items || r.data || [];
+    addUsage(); renderUI(); showInterview(r, role);
+  } catch(e) {
+    setLoading(4, false); var emp = el('emp4'); if (emp) emp.style.display = 'flex';
+    showErr(4, 'Error: ' + e.message);
+  } finally {
+    clearInterval(iv); setBusy(4, false);
+    var bt = el('btn4'); if (bt) { var sp = bt.querySelector('span'); if (sp) sp.textContent = 'Generate interview questions'; }
+    var ld = el('ld4'); if (ld) ld.style.display = 'none';
+  }
+}
+
+function showInterview(r, role) {
+  // Force hide loading, force show result
+  ['ld4','emp4'].forEach(function(id) { var e = el(id); if (e) e.style.display = 'none'; });
+  var res = el('res4');
+  if (!res) return;
+  res.style.display = 'block';
+
+  var qs = A(r.questions);
+  if (!qs.length) {
+    res.innerHTML = '<div style="padding:1rem;color:#dc2626;font-size:13px">No questions returned. Please try again.</div>';
+    return;
+  }
+
+  var wrap = document.createElement('div');
+
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:7px;padding:.875rem 1rem;margin-bottom:1rem;font-size:14px;font-weight:600;color:#0f172a';
+  hdr.textContent = qs.length + ' interview questions for ' + role;
+  wrap.appendChild(hdr);
+
+  qs.forEach(function(q, i) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border:1px solid #e2e8f0;padding:1rem;margin-bottom:10px;border-radius:8px';
+
+    // Question number and type
+    var num = document.createElement('div');
+    num.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:6px;font-weight:600';
+    var type = S(q.type || '');
+    num.textContent = 'Q' + (q.number || (i+1)) + (type && type.toLowerCase() !== 'undefined' ? '  ' + type : '');
+    card.appendChild(num);
+
+    // Question text
+    var qtxt = document.createElement('div');
+    qtxt.style.cssText = 'font-size:14px;font-weight:600;color:#0f172a;margin-bottom:10px;line-height:1.5';
+    qtxt.textContent = S(q.question || '');
+    card.appendChild(qtxt);
+
+    // Why asked + How to answer
+    var why = S(q.why_asked || q.why || '');
+    var how = S(q.how_to_answer || q.how || '');
+    if (why || how) {
+      var detail = document.createElement('div');
+      detail.style.cssText = 'font-size:12px;color:#64748b;line-height:1.7;padding:8px 10px;background:#f8fafc;border-radius:6px;margin-bottom:8px';
+      if (why) {
+        var wb = document.createElement('div');
+        wb.innerHTML = '<strong style="color:#334155">Why asked:</strong> ' + why;
+        detail.appendChild(wb);
+      }
+      if (how) {
+        var hb = document.createElement('div');
+        hb.style.marginTop = '6px';
+        hb.innerHTML = '<strong style="color:#334155">How to structure it:</strong> ' + how;
+        detail.appendChild(hb);
+      }
+      card.appendChild(detail);
+    }
+
+    // Answer
+    var ans = S(q.answer || q.sample_answer || '');
+    if (ans) {
+      var ansBox = document.createElement('div');
+      ansBox.style.cssText = 'background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left:4px solid #16a34a;padding:12px 14px;border-radius:0 8px 8px 0';
+      var ansLbl = document.createElement('div');
+      ansLbl.style.cssText = 'font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#16a34a;font-weight:700;margin-bottom:6px';
+      ansLbl.textContent = 'Your prepared answer';
+      var ansTxt = document.createElement('div');
+      ansTxt.style.cssText = 'font-size:13px;color:#14532d;line-height:1.8';
+      ansTxt.id = 'ans_' + (q.number || (i+1));
+      ansTxt.textContent = ans;
+      var cpBtn = document.createElement('button');
+      cpBtn.style.cssText = 'margin-top:8px;font-size:11px;background:#16a34a;color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-weight:600';
+      cpBtn.textContent = 'Copy answer';
+      (function(txt) { cpBtn.onclick = function() { navigator.clipboard.writeText(txt).then(function() { toast('Copied!'); }); }; })(ans);
+      ansBox.appendChild(ansLbl); ansBox.appendChild(ansTxt); ansBox.appendChild(cpBtn);
+      card.appendChild(ansBox);
+    }
+    wrap.appendChild(card);
+  });
+
+  // Action buttons
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:7px;margin-top:.875rem';
+  var shareBtn = document.createElement('button');
+  shareBtn.style.cssText = 'flex:1;padding:9px;background:#2563eb;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px';
+  shareBtn.textContent = 'Share';
+  shareBtn.onclick = function() { show('sharePopup'); };
+  var saveBtn = document.createElement('button');
+  saveBtn.style.cssText = 'flex:1;padding:9px;background:#16a34a;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px';
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = function() { dlText('res4', 'cvio-interview.txt'); };
+  btnRow.appendChild(shareBtn); btnRow.appendChild(saveBtn);
+  wrap.appendChild(btnRow);
+
+  res.innerHTML = '';
+  res.appendChild(wrap);
+}
+
+function copyAns(n) { var e = el('ans_' + n); if (e) navigator.clipboard.writeText(e.textContent).then(function() { toast('Copied!'); }); }
+
+// CV BUILDER
+async function runBuilder() {
+  clearErr(5);
+  if (!await checkGate()) return;
+  var jd = val('bld-jd'), role = val('bld-role');
+  if (!cvReady[5]) return showErr(5, 'Please upload your CV first.');
+  if (!jd) return showErr(5, 'Please paste the job description.');
+  if (!role) return showErr(5, 'Please enter your target role title.');
+  setBusy(5, true); setLoading(5, true);
+  var iv = msgLoop(5, ['Reading CV...', 'Analysing JD...', 'Rewriting CV...', 'Adding keywords...', 'Finishing...']);
+  var cvSnippet = cvText[5].substring(0, 2500);
+  var jdSnippet = sanitize(jd).substring(0, 600);
+  var p1 = 'Rewrite this CV for the role of ' + role + ' using keywords from the job description. Return the complete rewritten CV as plain text only - no JSON, no markdown, no code blocks. Include every section: name, contact, professional summary, all work experience with bullet points, education, skills, certifications, projects. CV: ' + cvSnippet + ' Job description: ' + jdSnippet;
+  try {
+    var raw = await callAPI(p1, 4000);
+    var cvContent = raw.replace(/`/g, '').trim();
+    var r = {improved_cv: cvContent, improvements: []};
+    addUsage(); renderUI(); showBuilder(r, role);
+    } catch(e) {
+    setLoading(5, false); var emp = el('emp5'); if (emp) emp.style.display = 'flex';
+    showErr(5, 'Error: ' + e.message);
+  } finally {
+    clearInterval(iv); setBusy(5, false);
+    var bt = el('btn5'); if (bt) { var sp = bt.querySelector('span'); if (sp) sp.textContent = 'Build my CV for this job'; }
+    var ld = el('ld5'); if (ld) ld.style.display = 'none';
+  }
+}
+
+function showBuilder(r, role) {
+  var cvTxt = S(r.improved_cv || r.cv || r.rewritten_cv || '');
+  var changes = A(r.changes || []);
+  var improvements = A(r.improvements || []);
+  var res = el('res5'); if (!res) return;
+  res.innerHTML = ''; res.style.display = 'block';
+  var wrap = document.createElement('div');
+  if (!cvTxt || cvTxt.length < 100) {
+    res.innerHTML = '<div style="padding:1rem;color:#dc2626;font-size:13px;background:#fff5f5;border-radius:8px;border:1px solid #fca5a5">Could not generate full CV. Please try again — if the problem persists, try with a shorter job description.</div>';
+    return;
+  }
+  wrap.appendChild(mk('div', 'font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#16a34a;font-weight:700;margin-bottom:8px', 'Your rebuilt CV for: ' + role));
+  if (improvements.length) {
+    var ib = mk('div', 'background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:7px;padding:11px 13px;margin-bottom:.875rem', '');
+    ib.appendChild(mk('div', 'font-size:10px;text-transform:uppercase;color:#2563eb;font-weight:700;margin-bottom:7px', 'Key improvements'));
+    improvements.forEach(function(imp) { ib.appendChild(mk('div', 'font-size:13px;color:#1e3a5f;padding:2px 0', '\u2713 ' + S(imp))); });
+    wrap.appendChild(ib);
+  }
+  var box = mk('div', 'background:#fff;border:1.5px solid #bfdbfe;border-radius:7px;padding:1.5rem 2rem;max-height:500px;overflow-y:auto;margin-bottom:.875rem;box-shadow:0 2px 8px rgba(0,0,0,.04)', '');
+  // Format CV with proper sections highlighted
+  var cvEl = document.createElement('div');
+  cvEl.style.cssText = 'font-size:13px;line-height:1.9;color:#0f172a;font-family:Georgia,serif';
+  var lines = cvTxt.split('\n');
+  lines.forEach(function(line) {
+    var trimmed = line.trim();
+    if (!trimmed) { cvEl.appendChild(document.createElement('br')); return; }
+    var isHeader = trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 40 && !trimmed.startsWith('-') && !trimmed.startsWith('•');
+    var p = document.createElement('p');
+    p.style.margin = '0 0 4px 0';
+    if (isHeader) { p.style.cssText = 'font-weight:700;font-size:14px;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:4px;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.05em'; }
+    p.textContent = trimmed;
+    cvEl.appendChild(p);
+  });
+  box.appendChild(cvEl);
+  wrap.appendChild(box);
+  var btnRow = mk('div', 'display:flex;gap:7px;margin-bottom:.875rem', '');
+  var cpBtn = mk('button', 'flex:1;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer', 'Copy CV');
+  cpBtn.onclick = function() { navigator.clipboard.writeText(cvTxt).then(function() { toast('CV copied!'); }); };
+  var dlBtn = mk('button', 'flex:1;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer', 'Download .txt');
+  dlBtn.onclick = function() { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([cvTxt], {type:'text/plain'})); a.download = 'rebuilt-cv.txt'; a.click(); toast('Downloaded!'); };
+  btnRow.appendChild(cpBtn); btnRow.appendChild(dlBtn); wrap.appendChild(btnRow);
+  if (changes.length) {
+    wrap.appendChild(mk('div', 'font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#374151;font-weight:700;margin-bottom:9px', 'What we changed & why'));
+    changes.forEach(function(ch) {
+      var card = mk('div', 'background:#fff;border:1px solid #e2e8f0;border-radius:7px;padding:10px 13px;margin-bottom:7px', '');
+      card.appendChild(mk('div', 'font-size:10px;text-transform:uppercase;color:#2563eb;font-weight:700;margin-bottom:3px', S(ch.section || '')));
+      card.appendChild(mk('div', 'font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px', S(ch.what_changed || '')));
+      card.appendChild(mk('div', 'font-size:12px;color:#64748b', 'Why: ' + S(ch.why || '')));
+      wrap.appendChild(card);
+    });
+  }
+  var ld5 = el('ld5'); if (ld5) ld5.style.display = 'none';
+  var emp5 = el('emp5'); if (emp5) emp5.style.display = 'none';
+  res.appendChild(wrap);
+}
+
+// CHAT
+function updateCVBadge() {
+  var cv = cvText[1] || cvText[4] || cvText[5] || '';
+  var b = el('cvBadge'); if (!b) return;
+  if (cv.length > 50) { b.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac'; b.textContent = 'CV loaded'; }
+  else { b.style.cssText = 'font-size:11px;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0'; b.textContent = 'No CV loaded'; }
+}
+
+function addMsg(role, text) {
+  var wrap = el('chatMsgs'); if (!wrap) return;
+  var isUser = role === 'user';
+  var div = document.createElement('div'); div.style.cssText = 'display:flex;gap:9px;align-items:flex-start' + (isUser ? ';flex-direction:row-reverse' : '');
+  var av = mk('div', 'width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;' + (isUser ? 'background:#e2e8f0;color:#374151' : 'background:#0f172a;color:#fff'), isUser ? 'You' : 'AI');
+  var bub = mk('div', 'border:1px solid #e2e8f0;padding:9px 13px;font-size:13px;line-height:1.6;max-width:85%;white-space:pre-wrap;border-radius:' + (isUser ? '12px 0 12px 12px' : '0 12px 12px 12px') + ';background:' + (isUser ? '#0f172a' : '#fafbfc') + ';color:' + (isUser ? '#fff' : '#0f172a'), text);
+  div.appendChild(av); div.appendChild(bub); wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight;
+}
+
+function showTyping() {
+  if (el('typingInd')) return;
+  var wrap = el('chatMsgs'); if (!wrap) return;
+  var div = document.createElement('div'); div.id = 'typingInd'; div.style.cssText = 'display:flex;gap:9px;align-items:flex-start';
+  div.innerHTML = '<div style="width:30px;height:30px;border-radius:50%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">AI</div><div style="border:1px solid #e2e8f0;padding:9px 13px;border-radius:0 12px 12px 12px;background:#fafbfc;display:flex;gap:5px;align-items:center"><span style="width:7px;height:7px;background:#93c5fd;border-radius:50%;display:inline-block;animation:dot 1.2s ease-in-out infinite"></span><span style="width:7px;height:7px;background:#93c5fd;border-radius:50%;display:inline-block;animation:dot 1.2s ease-in-out .2s infinite"></span><span style="width:7px;height:7px;background:#93c5fd;border-radius:50%;display:inline-block;animation:dot 1.2s ease-in-out .4s infinite"></span></div>';
+  wrap.appendChild(div); wrap.scrollTop = wrap.scrollHeight;
+}
+function hideTyping() { var e = el('typingInd'); if (e) e.remove(); }
+function clearChat() { chatHistory = []; var w = el('chatMsgs'); if (w) w.innerHTML = ''; var sr = el('suggRow'); if (sr) sr.style.display = 'flex'; }
+
+async function sendChat() {
+  var inp = el('chatIn'); if (!inp) return;
+  var msg = inp.value.trim(); if (!msg) return;
+  inp.value = ''; inp.style.height = '42px';
+  addMsg('user', msg); chatHistory.push({role: 'user', content: msg});
+  var btn = el('chatSendBtn'); if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  showTyping(); var sr = el('suggRow'); if (sr) sr.style.display = 'none';
+  var cv = cvText[1] || cvText[4] || cvText[5] || '';
+  var sys = 'You are an expert CV coach. Be helpful and specific. ';
+  if (cv.length > 50) sys += 'User CV: ' + sanitize(cv) + ' ';
+  var hist = chatHistory.slice(-6).map(function(m) { return m.role + ': ' + m.content; }).join(' | ');
+  var prompt = sys + 'Conversation: ' + hist;
+  try {
+    var reply = await callAPI(prompt, 600);
+    hideTyping(); addMsg('assistant', reply); chatHistory.push({role: 'assistant', content: reply});
+  } catch(e) { hideTyping(); addMsg('assistant', 'Sorry, something went wrong. Please try again.'); }
+  if (btn) { btn.disabled = false; btn.textContent = 'Send'; }
+}
+
+function askSugg(btn) { var inp = el('chatIn'); if (inp) { inp.value = btn.textContent; sendChat(); } }
+
+// PRICING & STRIPE
+function showPricing() { show('priceOverlay'); window.scrollTo(0, 0); }
+function hidePricing() { hide('priceOverlay'); }
+
+async function startCheckout(plan) {
+  var pid = plan === 'monthly' ? PRICE_MONTHLY : PRICE_QUARTERLY;
+  var btnId = plan === 'monthly' ? 'mBtn' : 'qBtn';
+  var btn = el(btnId); if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+  try {
+    var u = getUser();
+    var resp = await fetch('/api/checkout', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({priceId: pid, email: u ? u.email : ''})});
+    var data = await resp.json();
+    if (data.url) { window.location.href = data.url; }
+    else {
+      toast('Payment error: ' + (data.error || 'Unknown'));
+      if (btn) { btn.disabled = false; btn.textContent = plan === 'monthly' ? 'Subscribe \u2014 \xa317.99/mo' : 'Subscribe \u2014 \xa313.99/mo'; }
+    }
+  } catch(e) {
+    toast('Could not connect. Try again.');
+    if (btn) { btn.disabled = false; btn.textContent = plan === 'monthly' ? 'Subscribe \u2014 \xa317.99/mo' : 'Subscribe \u2014 \xa313.99/mo'; }
+  }
+}
+
+function checkPayReturn() {
+  var p = new URLSearchParams(window.location.search);
+  if (p.get('payment') === 'success') {
+    var u = getUser();
+    if (u) {
+      u.paid = true; setUser(u);
+      var users = JSON.parse(localStorage.getItem('cvio_users') || '[]');
+      var idx = users.findIndex(function(x) { return x.email === u.email; });
+      if (idx > -1) { users[idx].paid = true; localStorage.setItem('cvio_users', JSON.stringify(users)); }
+    }
+    toast('Welcome to CVio Pro! Unlimited access activated.'); renderUI(); window.history.replaceState({}, '', '/');
+  } else if (p.get('payment') === 'cancelled') {
+    toast('Payment cancelled.'); window.history.replaceState({}, '', '/');
+  }
+}
+
+// AUTH MODAL
+function openAuth(tab) { show('authModal'); switchAuthTab(tab || 'signup'); }
+function closeAuth() { hide('authModal'); }
+function switchAuthTab(tab) {
+  el('signupTab').classList.toggle('active', tab === 'signup');
+  el('loginTab').classList.toggle('active', tab === 'login');
+  el('signupForm').classList.toggle('active', tab === 'signup');
+  el('loginForm').classList.toggle('active', tab === 'login');
+}
+function pwReset() { var e = val('lEmail'); window.location.href = 'mailto:hellocviosupport@gmail.com?subject=CVio Password Reset&body=Reset for: ' + e; }
+
+// SHARE
+function shareVia(m) {
+  var url = window.location.href;
+  var score = lastResult ? ' scored ' + lastResult.score + '/100' : '';
+  var text = 'Just analysed my CV with CVio' + score + '! Free: ' + url;
+  if (m === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  else if (m === 'email') window.open('mailto:?subject=Check out CVio&body=' + encodeURIComponent(text));
+  else if (m === 'linkedin') window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url), '_blank');
+  else if (m === 'copy') { navigator.clipboard.writeText(url).then(function() { toast('Link copied!'); hide('sharePopup'); }); }
+}
+function shareLinkedIn() { window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(window.location.href), '_blank'); }
+
+function dlAnalysis() {
+  if (!lastResult) return; var d = lastResult;
+  var sal = d.salary_min > 1000 ? '\xa3' + d.salary_min.toLocaleString() + ' - \xa3' + d.salary_max.toLocaleString() : 'Not available';
+  var t = 'CVio Analysis\nScore: ' + d.score + '/100\nATS: ' + d.ats_score + '%\n\n' + d.summary + '\n\nSTRENGTHS\n' + d.strengths.join('\n') + '\n\nISSUES\n' + d.issues.map(function(i) { return i.problem + ' | Fix: ' + i.fix; }).join('\n') + '\n\nKEYWORDS: ' + d.keywords_present.join(', ') + '\nMISSING: ' + d.keywords_missing.join(', ') + '\n\nSALARY: ' + sal + '\n\nTOP ACTION: ' + d.top_action;
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], {type: 'text/plain'})); a.download = 'cvio-analysis.txt'; a.click(); toast('Saved!');
+}
+
+function dlText(id, fname) {
+  var e = el(id); if (!e) return;
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([e.innerText], {type: 'text/plain'})); a.download = fname; a.click(); toast('Saved!');
+}
+
+function showSample() { show('sampleModal'); }
+
+// TESTIMONIALS
+function slideTesti(dir) {
+  var track = el('tTrack'); if (!track || !track.children.length) return;
+  var max = Math.ceil(track.children.length / 3) - 1;
+  tIdx = Math.max(0, Math.min(max, tIdx + dir));
+  var w = track.children[0].offsetWidth + 16;
+  track.style.transform = 'translateX(-' + (tIdx * 3 * w) + 'px)';
+  buildDots();
+}
+function buildDots() {
+  var dots = el('tDots'), track = el('tTrack'); if (!dots || !track) return;
+  var total = Math.ceil(track.children.length / 3); dots.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    var d = document.createElement('div');
+    d.style.cssText = 'width:8px;height:8px;border-radius:50%;cursor:pointer;background:' + (i === tIdx ? '#2563eb' : '#bfdbfe');
+    (function(idx) { d.onclick = function() { tIdx = idx; slideTesti(0); }; })(i);
+    dots.appendChild(d);
+  }
+}
+
+// MISC
+function toggleFaq(e) { var was = e.classList.contains('open'); document.querySelectorAll('.faq-item').forEach(function(f) { f.classList.remove('open'); }); if (!was) e.classList.add('open'); }
+function setStar(n) { starRating = n; document.querySelectorAll('.star').forEach(function(s, i) { s.classList.toggle('on', i < n); }); }
+async function submitFb() {
+  var text = val('fbTxt'); if (starRating === 0) { toast('Please select a star rating.'); return; }
+  var u = getUser();
+  if (sb) { try { await sb.from('feedback').insert([{email: u ? u.email : 'anon', stars: starRating, message: text}]); } catch(e) {} }
+  hide('fbModal'); toast('Thank you!'); var ft = el('fbTxt'); if (ft) ft.value = ''; starRating = 0;
+  document.querySelectorAll('.star').forEach(function(s) { s.classList.remove('on'); });
+}
+
+var articles = {
+  ats: {
+    color: '#2563eb',
+    badge: 'ATS Guide',
+    title: 'How to Beat ATS and Get Your CV Seen by Recruiters',
+    time: '5 min read',
+    body: '<p style="font-size:14px;color:#64748b;line-height:1.8;margin-bottom:1rem">Over 75% of CVs are rejected by Applicant Tracking Systems before a human ever reads them. Here is exactly what to do to get through every filter and land more interviews.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>1. Use standard section headings.</strong> ATS systems scan for keywords like "Work Experience", "Education", and "Skills". If you use creative alternatives like "My Journey" or "What I Have Done", the system cannot categorise your content and will score your CV lower. Always use the standard headings.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>2. Mirror keywords from the job description exactly.</strong> If the job says "stakeholder management", your CV must say exactly that — not "managing stakeholders" or "working with stakeholders". Copy the exact phrases used in the job posting and weave them naturally into your experience.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>3. Avoid tables, columns, and graphics.</strong> Most ATS cannot read text inside tables, text boxes, headers, footers, or images. If your CV uses a two-column layout, the ATS may scramble the text entirely. Use a clean single-column format.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>4. Save as PDF or DOCX.</strong> Both formats are safe. Avoid .pages, .odt, or other formats. When in doubt, DOCX is the most universally compatible format for ATS systems.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>5. Put contact details in the body, not headers.</strong> Many ATS systems ignore content placed in header or footer sections. Put your name, email, phone, and LinkedIn URL in the main body of the document.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>6. Use a clean, standard font.</strong> Arial, Calibri, or Times New Roman. Avoid decorative or script fonts which ATS may struggle to parse correctly.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>7. Spell out acronyms.</strong> Write "Search Engine Optimisation (SEO)" rather than just "SEO". The job description might use the full form and the ATS will not match an acronym to the full phrase.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8"><strong>8. Tailor your CV for every application.</strong> A generic CV will never score highly for a specific role. Use CVio to analyse your CV against each job and get a list of missing keywords to add before you apply.</p>'
+  },
+  salary: {
+    color: '#16a34a',
+    badge: 'Salary Guide',
+    title: 'How to Negotiate Your Salary and Stop Leaving Money on the Table',
+    time: '6 min read',
+    body: '<p style="font-size:14px;color:#64748b;line-height:1.8;margin-bottom:1rem">Most professionals accept the first salary offer they receive and leave thousands of pounds on the table. Research shows that professionals who negotiate consistently earn significantly more over their careers. Here is how to do it with confidence.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>1. Research your market value before the interview.</strong> Use Glassdoor, LinkedIn Salary, Totaljobs, and the CVio salary estimator to know your realistic range before any conversation. Go in knowing your ideal number, your realistic target, and your absolute minimum.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>2. Let them go first.</strong> When asked "What are your salary expectations?", deflect with: "I would love to understand the full scope of the role first — what budget have you allocated for this position?" This anchors the negotiation in your favour and avoids underselling yourself.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>3. Give a range, not a single number.</strong> Put your realistic target at the lower end of your range. If you want £55,000, say £55,000 to £65,000. Most employers will meet you at the lower end or middle, which is exactly where you want to be.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>4. Never accept on the spot.</strong> Always say you need 24 to 48 hours to consider the offer. Say: "Thank you so much — I am really excited about this opportunity. Can I have until tomorrow to review the full details?" This is completely normal and expected. No employer will rescind an offer for asking.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>5. Negotiate the whole package.</strong> If they cannot move on base salary, negotiate other benefits. Sign-on bonuses, extra holiday days, remote working flexibility, faster performance reviews, training budgets, and equipment allowances all have monetary value. A £2,000 sign-on bonus and an extra 3 days holiday is worth negotiating for.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>6. Use competing offers as leverage — carefully.</strong> If you have another offer, you can mention it: "I do have another offer at £58,000 but this role is my first choice — is there any flexibility?" Use this sparingly and only if true.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8"><strong>7. Always get it in writing.</strong> Once salary is agreed verbally, ask for a written offer letter before giving notice at your current employer. Verbal agreements are not binding.</p>'
+  },
+  career: {
+    color: '#7c3aed',
+    badge: 'Career Change',
+    title: 'How to Successfully Change Careers Without Starting From Scratch',
+    time: '7 min read',
+    body: '<p style="font-size:14px;color:#64748b;line-height:1.8;margin-bottom:1rem">The average person changes careers 5 to 7 times in their working life. A career change does not mean starting over — it means reframing the experience you already have. Here is how to make the transition successfully.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>1. Identify your transferable skills.</strong> Skills like project management, data analysis, stakeholder communication, budget management, and leadership transfer across virtually every industry. Write down every skill you use in your current role and highlight which ones apply to your target field.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>2. Research the gap honestly.</strong> Look at 10 job descriptions in your target field and note what skills and qualifications appear most often. This gives you a clear picture of what you already have and what you need to develop.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>3. Bridge the gap quickly and cheaply.</strong> A single online course on Coursera, LinkedIn Learning, or Google Career Certificates can transform your credibility in a new field within weeks. Employers value demonstrated interest — completing a relevant course signals commitment.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>4. Reframe your experience for the new field.</strong> Do not just list what you did — translate it. "Managed supplier relationships" becomes "Stakeholder and vendor management across 15+ accounts". Use the CVio Bullet Rewriter to reframe every bullet point in your new target language.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>5. Use the CVio CV Builder for career changes.</strong> Paste any job description from your target industry and CVio will rewrite your entire CV to match it — highlighting the relevant experience you already have and adding the keywords that ATS systems in your new field are looking for.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8;margin-bottom:.75rem"><strong>6. Network before you apply.</strong> 70% of jobs are never advertised. Connect with 5 to 10 people on LinkedIn who work in your target role and ask for a 15-minute informational chat. Most people are happy to help and these conversations can lead directly to job offers.</p>'
+      + '<p style="font-size:14px;color:#334155;line-height:1.8"><strong>7. Target companies that value diverse backgrounds.</strong> Startups, scale-ups, and companies undergoing digital transformation actively look for people who bring fresh perspectives from other industries. These are your best entry points.</p>'
+  }
+};
+
+function openArticle(id) {
+  var a = articles[id]; if (!a) return;
+  var c = el('articleContent'); if (!c) return;
+  c.innerHTML = '<div style="height:5px;background:' + a.color + ';margin:-.5rem -2rem 1.5rem;border-radius:7px 7px 0 0"></div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:' + a.color + ';font-weight:600;margin-bottom:7px">' + a.badge + '</div><h2 style="font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;margin-bottom:11px;line-height:1.3">' + a.title + '</h2><div style="font-size:12px;color:#94a3b8;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid #e2e8f0">CVio Team \xb7 ' + a.time + '</div>' + a.body + '<div style="margin-top:1.75rem;text-align:center"><button onclick="hide(\'articleModal\');goTab(\'analyse\')" style="background:#2563eb;color:#fff;border:none;padding:11px 26px;border-radius:6px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:500;cursor:pointer">Analyse my CV free</button></div>';
+  show('articleModal');
+}
+
+function toggleMenu() { var m = el('mmenu'); if (m) m.classList.toggle('open'); }
+document.addEventListener('click', function(e) {
+  var menu = el('mmenu'), ham = document.querySelector('.ham');
+  if (menu && ham && !menu.contains(e.target) && !ham.contains(e.target)) menu.classList.remove('open');
+});
+
+function checkCookies() { if (!localStorage.getItem('cvio_cookies')) { var b = el('cookieBanner'); if (b) b.style.display = 'flex'; } }
+function acceptCookies() { localStorage.setItem('cvio_cookies', 'accepted'); var b = el('cookieBanner'); if (b) b.style.display = 'none'; }
+function declineCookies() { localStorage.setItem('cvio_cookies', 'essential'); var b = el('cookieBanner'); if (b) b.style.display = 'none'; }
+
+</script>
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69c2ae93d4a4be1c37274def/1jkg7js2t';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+</body>
+</html>
